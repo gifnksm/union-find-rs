@@ -6,13 +6,14 @@
 
 use std::{iter, mem};
 
-#[derive(Clone)]
+#[derive(Clone, Show)]
 enum UFNode {
     Key(uint),
     Size(uint)
 }
 
 /// Struct for union-find operation.
+#[derive(Clone, Show)]
 pub struct UnionFind {
     data: Vec<UFNode>
 }
