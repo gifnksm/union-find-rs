@@ -1,5 +1,10 @@
 [package]
 
-name = "union_find"
+name = "union-find"
 version = "0.0.1"
 authors = ["gifnksm <makoto.nksm+github@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/gifnksm/union-find-rs"
+description = "Struct and methods for union-find operation."
+documentation = "https://gifnksm.github.io/union-find-rs"
