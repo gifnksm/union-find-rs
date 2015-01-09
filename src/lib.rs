@@ -8,8 +8,8 @@ use std::{iter, mem};
 
 #[derive(Clone, Show)]
 enum UFNode {
-    Key(uint),
-    Size(uint)
+    Key(usize),
+    Size(usize)
 }
 
 /// Struct for union-find operation.
@@ -21,14 +21,14 @@ pub struct UnionFind {
 impl UnionFind {
     /// Creates empty `UnionFind` struct.
     #[inline]
-    pub fn new(len: uint) -> UnionFind {
+    pub fn new(len: usize) -> UnionFind {
         UnionFind { data: iter::repeat(UFNode::Size(1)).take(len).collect() }
     }
 
     /// Join two sets that contains given keys (Union operation).
     ///
     /// Returns `true` if these keys are belonged to different sets.
-    pub fn union(&mut self, key1: uint, key2: uint) -> bool {
+    pub fn union(&mut self, key1: usize, key2: usize) -> bool {
         let (key1, size1) = self.get_key_size(key1);
         let (key2, size2) = self.get_key_size(key2);
         if key1 == key2 { return false; }
@@ -49,21 +49,21 @@ impl UnionFind {
 
     /// Returns `true` if two keys contained by the same set (find operation).
     #[inline]
-    pub fn find(&mut self, key1: uint, key2: uint) -> bool {
+    pub fn find(&mut self, key1: usize, key2: usize) -> bool {
         return self.get_key(key1) == self.get_key(key2);
     }
 
     /// Returns the number of the elements that belongs to the same set with key.
     #[inline]
-    pub fn get_size(&mut self, key: uint) -> uint {
+    pub fn get_size(&mut self, key: usize) -> usize {
         self.get_key_size(key).1
     }
 
-    fn get_key(&mut self, key: uint) -> uint {
+    fn get_key(&mut self, key: usize) -> usize {
         self.get_key_size(key).0
     }
 
-    fn get_key_size(&mut self, key: uint) -> (uint, uint) {
+    fn get_key_size(&mut self, key: usize) -> (usize, usize) {
         let (root_key, size) = match self.data[key] {
             UFNode::Size(size) => { return (key, size); }
             UFNode::Key(key) => self.get_key_size(key)
