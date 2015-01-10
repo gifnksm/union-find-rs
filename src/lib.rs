@@ -14,7 +14,7 @@ enum UFNode<T> {
 }
 
 impl<T> UFNode<T> {
-    fn value(&self) -> &T {
+    fn get(&self) -> &T {
         match self {
             &UFNode::Value(ref val) => val,
             &UFNode::Key(_) => panic!()
@@ -107,11 +107,11 @@ impl<T: UFValue = Size> UnionFind<T> {
          self.get_key(key0) == self.get_key(key1)
     }
 
-    /// Returns the number of the elements that belongs to the same set with key.
+    /// Returns the reference to the value of the set that the key belongs to.
     #[inline]
-    pub fn get_value(&mut self, key: usize) -> &T {
+    pub fn get(&mut self, key: usize) -> &T {
         let root_key = self.get_key(key);
-        self.data[root_key].value()
+        self.data[root_key].get()
     }
 
     fn get_key(&mut self, key: usize) -> usize {
@@ -140,23 +140,23 @@ mod tests {
     #[test]
     fn test_union_find() {
         let mut uf = UnionFind::new(100);
-        assert_eq!(&Size(1), uf.get_value(0));
-        assert_eq!(&Size(1), uf.get_value(1));
+        assert_eq!(&Size(1), uf.get(0));
+        assert_eq!(&Size(1), uf.get(1));
         assert!(!uf.find(0, 1));
         assert!(!uf.find(1, 2));
         assert!(uf.union(0, 1));
         assert!(uf.find(0, 1));
-        assert_eq!(&Size(2), uf.get_value(0));
-        assert_eq!(&Size(2), uf.get_value(1));
-        assert_eq!(&Size(1), uf.get_value(2));
+        assert_eq!(&Size(2), uf.get(0));
+        assert_eq!(&Size(2), uf.get(1));
+        assert_eq!(&Size(1), uf.get(2));
         assert!(!uf.union(0, 1));
-        assert_eq!(&Size(2), uf.get_value(0));
-        assert_eq!(&Size(2), uf.get_value(1));
-        assert_eq!(&Size(1), uf.get_value(2));
+        assert_eq!(&Size(2), uf.get(0));
+        assert_eq!(&Size(2), uf.get(1));
+        assert_eq!(&Size(1), uf.get(2));
         assert!(uf.union(1, 2));
-        assert_eq!(&Size(3), uf.get_value(0));
-        assert_eq!(&Size(3), uf.get_value(1));
-        assert_eq!(&Size(3), uf.get_value(2));
+        assert_eq!(&Size(3), uf.get(0));
+        assert_eq!(&Size(3), uf.get(1));
+        assert_eq!(&Size(3), uf.get(2));
         assert!(uf.find(0, 1));
         assert!(uf.find(2, 1));
     }
