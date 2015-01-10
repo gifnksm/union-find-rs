@@ -5,6 +5,7 @@
         unused_qualifications, unused_results, unused_typecasts)]
 
 use std::{mem, usize};
+use std::default::Default;
 use std::iter::FromIterator;
 
 #[derive(Clone, Show)]
@@ -36,9 +37,6 @@ impl<T> UFNode<T> {
 
 /// The value that can be contained with `UFValue`.
 pub trait UFValue: Sized {
-    /// Initialize the value.
-    fn init(key: usize) -> Self;
-
     /// Merge two value into one.
     ///
     /// This is used by `UnionFind::union` operation.
@@ -56,7 +54,6 @@ pub enum Merge<T> {
 pub struct Size(usize);
 
 impl UFValue for Size {
-    fn init(_key: usize) -> Size { Size(1) }
     fn merge(Size(lval): Size, Size(rval): Size) -> Merge<Size> {
         if lval >= rval {
             Merge::Left(Size(lval + rval))
@@ -64,6 +61,10 @@ impl UFValue for Size {
             Merge::Right(Size(lval + rval))
         }
     }
+}
+
+impl Default for Size {
+    fn default() -> Size { Size(1) }
 }
 
 /// Struct for union-find operation.
@@ -75,9 +76,14 @@ pub struct UnionFind<V = Size> {
 impl<T: UFValue = Size> UnionFind<T> {
     /// Creates empty `UnionFind` struct.
     #[inline]
-    pub fn new(len: usize) -> UnionFind<T> {
-        let data = (0 .. len).map(UFValue::init).map(UFNode::Value).collect();
-        UnionFind { data: data }
+    pub fn new(len: usize) -> UnionFind<T>
+        where T: Default
+    {
+        UnionFind {
+            data: (0 .. len)
+                .map(|_| UFNode::Value(Default::default()))
+                .collect()
+        }
     }
 
     /// Join two sets that contains given keys (Union operation).
@@ -139,7 +145,6 @@ impl<T: UFValue = Size> UnionFind<T> {
 }
 
 impl<T: UFValue> FromIterator<T> for UnionFind<T> {
-    /// Creates `UnionFind` struct from iterator.
     #[inline]
     fn from_iter<I: Iterator<Item = T>>(iterator: I) -> UnionFind<T> {
         UnionFind { data: iterator.map(UFNode::Value).collect() }
