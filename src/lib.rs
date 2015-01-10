@@ -20,7 +20,13 @@ impl<T> UFNode<T> {
             &UFNode::Key(_) => panic!()
         }
     }
-    fn unwrap_value(self) -> T {
+    fn get_mut(&mut self) -> &mut T {
+        match self {
+            &mut UFNode::Value(ref mut val) => val,
+            &mut UFNode::Key(_) => panic!()
+        }
+    }
+    fn unwrap(self) -> T {
         match self {
             UFNode::Value(val) => val,
             UFNode::Key(_) => panic!()
@@ -84,8 +90,8 @@ impl<T: UFValue = Size> UnionFind<T> {
         if k0 == k1 { return false; }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let v0 = mem::replace(&mut self.data[k0], UFNode::Key(usize::MAX)).unwrap_value();
-        let v1 = mem::replace(&mut self.data[k1], UFNode::Key(usize::MAX)).unwrap_value();
+        let v0 = mem::replace(&mut self.data[k0], UFNode::Key(usize::MAX)).unwrap();
+        let v1 = mem::replace(&mut self.data[k1], UFNode::Key(usize::MAX)).unwrap();
 
         match UFValue::merge(v0, v1) {
             Merge::Left(val) => {
@@ -112,6 +118,13 @@ impl<T: UFValue = Size> UnionFind<T> {
     pub fn get(&mut self, key: usize) -> &T {
         let root_key = self.get_key(key);
         self.data[root_key].get()
+    }
+
+    /// Returns the mutable reference to the value of the set that the key belongs to.
+    #[inline]
+    pub fn get_mut(&mut self, key: usize) -> &mut T {
+        let root_key = self.get_key(key);
+        self.data[root_key].get_mut()
     }
 
     fn get_key(&mut self, key: usize) -> usize {
