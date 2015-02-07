@@ -86,6 +86,10 @@ impl<T: UFValue = Size> UnionFind<T> {
         }
     }
 
+    /// Returns the size of `self`.
+    #[inline]
+    pub fn size(&self) -> usize { self.data.len() }
+
     /// Join two sets that contains given keys (Union operation).
     ///
     /// Returns `true` if these keys are belonged to different sets.
