@@ -8,7 +8,7 @@ use std::{mem, usize};
 use std::default::Default;
 use std::iter::FromIterator;
 
-#[derive(Clone, Show)]
+#[derive(Clone, Debug)]
 enum UFNode<T> {
     Key(usize),
     Value(T)
@@ -50,7 +50,7 @@ pub enum Merge<T> {
 }
 
 /// Reperesents the size of the group.
-#[derive(Copy, Clone, Show, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Size(usize);
 
 impl UFValue for Size {
@@ -68,7 +68,7 @@ impl Default for Size {
 }
 
 /// Struct for union-find operation.
-#[derive(Clone, Show)]
+#[derive(Clone, Debug)]
 pub struct UnionFind<V = Size> {
     data: Vec<UFNode<V>>
 }
