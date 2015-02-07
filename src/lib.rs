@@ -4,6 +4,10 @@
         unused, unused_extern_crates, unused_import_braces,
         unused_qualifications, unused_results, unused_typecasts)]
 
+#![cfg_attr(test, feature(core))]
+
+#![cfg_attr(test, feature(test))]
+
 use std::{mem, usize};
 use std::default::Default;
 use std::iter::FromIterator;
@@ -181,5 +185,70 @@ mod tests {
         assert_eq!(&Size(3), uf.get(2));
         assert!(uf.find(0, 1));
         assert!(uf.find(2, 1));
+    }
+}
+
+#[cfg(test)]
+mod bench {
+    extern crate test;
+
+    use self::test::Bencher;
+    use super::{UnionFind, Size};
+
+    fn union_short_trail(uf: &mut UnionFind<Size>) {
+        for i in 1 .. uf.size() {
+            uf.union(0, i);
+        }
+    }
+
+    fn union_long_trail(uf: &mut UnionFind<Size>) {
+        let mut k = 1;
+        while k < uf.size() {
+            for i in 0 .. (uf.size() / k / 2) {
+                uf.union(2 * k * i, 2 * k * i + k);
+            }
+            k *= 2;
+        }
+    }
+
+    fn find_all(uf: &mut UnionFind<Size>) {
+        for i in 1 .. uf.size() {
+            uf.find(0, i);
+        }
+    }
+
+    #[bench]
+    fn bench_union_short_trail(bencher: &mut Bencher) {
+        bencher.iter(|| {
+            let mut uf = UnionFind::<Size>::new(1024);
+            union_short_trail(&mut uf);
+        })
+    }
+
+    #[bench]
+    fn bench_union_long_trail(bencher: &mut Bencher) {
+        bencher.iter(|| {
+            let mut uf = UnionFind::<Size>::new(1024);
+            union_long_trail(&mut uf);
+            find_all(&mut uf);
+        })
+    }
+
+    #[bench]
+    fn bench_find_short_trail(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| {
+            find_all(&mut uf.clone());
+        })
+    }
+
+    #[bench]
+    fn bench_find_long_trail(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| {
+            find_all(&mut uf.clone());
+        })
     }
 }
