@@ -8,7 +8,7 @@
 
 use std::{mem, usize};
 use std::default::Default;
-use std::iter::FromIterator;
+use std::iter::{IntoIterator, FromIterator};
 
 #[derive(Clone, Debug)]
 enum UFNode<T> {
@@ -150,10 +150,10 @@ impl<T: UFValue = Size> UnionFind<T> {
     }
 }
 
-impl<T: UFValue> FromIterator<T> for UnionFind<T> {
+impl<A: UFValue> FromIterator<A> for UnionFind<A> {
     #[inline]
-    fn from_iter<I: Iterator<Item = T>>(iterator: I) -> UnionFind<T> {
-        UnionFind { data: iterator.map(UFNode::Value).collect() }
+    fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> UnionFind<A> {
+        UnionFind { data: iterator.into_iter().map(UFNode::Value).collect() }
     }
 }
 
