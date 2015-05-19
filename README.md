@@ -16,5 +16,5 @@ union-find = "*"
 and this to your crate root:
 
 ```rust
-extern crate "union-find" as union_find;
+extern crate union_find;
 ```
