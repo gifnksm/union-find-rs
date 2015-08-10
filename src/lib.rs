@@ -4,7 +4,7 @@
         unused, unused_extern_crates, unused_import_braces,
         unused_qualifications, unused_results)]
 
-#![cfg_attr(test, feature(test))]
+#![cfg_attr(all(test, feature = "nightly"), feature(test))]
 
 use std::{mem, usize};
 use std::default::Default;
@@ -186,7 +186,7 @@ mod tests {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "nightly"))]
 mod bench {
     extern crate test;
 

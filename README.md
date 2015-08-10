@@ -1,4 +1,4 @@
-# union-find-rs [![Build Status](https://travis-ci.org/gifnksm/union-find-rs.svg)](https://travis-ci.org/gifnksm/union-find-rs)
+# union-find-rs [![Build Status](https://travis-ci.org/gifnksm/union-find-rs.svg)](https://travis-ci.org/gifnksm/union-find-rs) [![Coverage Status](https://coveralls.io/repos/gifnksm/union-find-rs/badge.svg?branch=master&service=github)](https://coveralls.io/github/gifnksm/union-find-rs?branch=master)
 
 Struct and methods for union-find operation.
 
