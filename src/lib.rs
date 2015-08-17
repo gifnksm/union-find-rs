@@ -140,13 +140,20 @@ impl<T: UFValue = Size> UnionFind<T> {
     }
 
     fn get_key(&mut self, key: usize) -> usize {
-        let root_key = match self.data[key] {
-            UFNode::Value(_) => return key,
-            UFNode::Key(key) => self.get_key(key)
-        };
-
-        self.data[key] = UFNode::Key(root_key);
-        root_key
+        let mut cur_key = key;
+        loop {
+            match self.data[cur_key] {
+                UFNode::Value(_) => {
+                    if key != cur_key {
+                        self.data[key] = UFNode::Key(cur_key);
+                    }
+                    return cur_key;
+                }
+                UFNode::Key(k) => {
+                    cur_key = k;
+                }
+            }
+        }
     }
 }
 
