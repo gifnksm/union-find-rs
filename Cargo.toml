@@ -11,3 +11,6 @@ documentation = "https://gifnksm.github.io/union-find-rs"
 
 [features]
 nightly = []
+
+[dev-dependencies]
+rand = "*"

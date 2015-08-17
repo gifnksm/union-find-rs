@@ -189,8 +189,10 @@ mod tests {
 #[cfg(all(test, feature = "nightly"))]
 mod bench {
     extern crate test;
+    extern crate rand;
 
     use self::test::Bencher;
+    use self::rand::distributions::{IndependentSample, Range};
     use super::{UnionFind, Size};
 
     fn union_short_trail(uf: &mut UnionFind<Size>) {
@@ -200,19 +202,14 @@ mod bench {
     }
 
     fn union_long_trail(uf: &mut UnionFind<Size>) {
-        let mut k = 1;
-        while k < uf.size() {
-            for i in 0 .. (uf.size() / k / 2) {
-                uf.union(2 * k * i, 2 * k * i + k);
-            }
-            k *= 2;
-        }
-    }
+        let mut rng = rand::thread_rng();
+        let between = Range::new(0, uf.size());
 
-    fn find_all(uf: &mut UnionFind<Size>) {
-        for i in 1 .. uf.size() {
-            uf.find(0, i);
-        }
+        for _ in 0..uf.size() {
+            let a = between.ind_sample(&mut rng);
+            let b = between.ind_sample(&mut rng);
+            uf.union(a, b);
+       }
     }
 
     #[bench]
@@ -228,25 +225,127 @@ mod bench {
         bencher.iter(|| {
             let mut uf = UnionFind::<Size>::new(1024);
             union_long_trail(&mut uf);
-            find_all(&mut uf);
         })
     }
 
-    #[bench]
-    fn bench_find_short_trail(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| {
-            find_all(&mut uf.clone());
-        })
+
+    fn find_interleave(uf: &UnionFind<Size>, n: usize) -> UnionFind<Size> {
+        let mut uf = uf.clone();
+        for _ in 0..n {
+            for i in 1 .. uf.size() {
+                uf.find(0, i);
+            }
+        }
+        uf
+    }
+
+    fn find_repeat(uf: &UnionFind<Size>, n: usize) -> UnionFind<Size> {
+        let mut uf = uf.clone();
+        for i in 1 .. uf.size() {
+            for _ in 0..n {
+                uf.find(0, i);
+            }
+        }
+        uf
     }
 
     #[bench]
-    fn bench_find_long_trail(bencher: &mut Bencher) {
+    fn bench_find_short_trail_1_interleave(bencher: &mut Bencher) {
         let mut uf = UnionFind::<Size>::new(1024);
         union_short_trail(&mut uf);
-        bencher.iter(|| {
-            find_all(&mut uf.clone());
-        })
+        bencher.iter(|| find_interleave(&uf, 1));
+    }
+    #[bench]
+    fn bench_find_long_trail_1_interleave(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_interleave(&uf, 1));
+    }
+    #[bench]
+    fn bench_find_short_trail_1_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 1));
+    }
+    #[bench]
+    fn bench_find_long_trail_1_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 1));
+    }
+
+    #[bench]
+    fn bench_find_short_trail_10_interleave(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| find_interleave(&uf, 10));
+    }
+    #[bench]
+    fn bench_find_long_trail_10_interleave(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_interleave(&uf, 10));
+    }
+    #[bench]
+    fn bench_find_short_trail_10_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 10));
+    }
+    #[bench]
+    fn bench_find_long_trail_10_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 10));
+    }
+
+    #[bench]
+    fn bench_find_short_trail_100_interleave(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| find_interleave(&uf, 100));
+    }
+    #[bench]
+    fn bench_find_long_trail_100_interleave(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_interleave(&uf, 100));
+    }
+    #[bench]
+    fn bench_find_short_trail_100_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 100));
+    }
+    #[bench]
+    fn bench_find_long_trail_100_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 100));
+    }
+
+    #[bench]
+    fn bench_find_short_trail_1000_interleave(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| find_interleave(&uf, 1000));
+    }
+    #[bench]
+    fn bench_find_long_trail_1000_interleave(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_interleave(&uf, 1000));
+    }
+    #[bench]
+    fn bench_find_short_trail_1000_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_short_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 1000));
+    }
+    #[bench]
+    fn bench_find_long_trail_1000_repeat(bencher: &mut Bencher) {
+        let mut uf = UnionFind::<Size>::new(1024);
+        union_long_trail(&mut uf);
+        bencher.iter(|| find_repeat(&uf, 1000));
     }
 }
