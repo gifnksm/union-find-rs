@@ -6,36 +6,9 @@
 
 #![cfg_attr(all(test, feature = "nightly"), feature(test))]
 
-use std::{mem, usize};
+use std::mem;
 use std::default::Default;
 use std::iter::{IntoIterator, FromIterator};
-
-#[derive(Clone, Debug)]
-enum UFNode<T> {
-    Key(usize),
-    Value(T)
-}
-
-impl<T> UFNode<T> {
-    fn get(&self) -> &T {
-        match self {
-            &UFNode::Value(ref val) => val,
-            &UFNode::Key(_) => panic!()
-        }
-    }
-    fn get_mut(&mut self) -> &mut T {
-        match self {
-            &mut UFNode::Value(ref mut val) => val,
-            &mut UFNode::Key(_) => panic!()
-        }
-    }
-    fn unwrap(self) -> T {
-        match self {
-            UFNode::Value(val) => val,
-            UFNode::Key(_) => panic!()
-        }
-    }
-}
 
 /// The value that can be contained with `UFValue`.
 pub trait UFValue: Sized {
@@ -72,20 +45,15 @@ impl Default for Size {
 /// Struct for union-find operation.
 #[derive(Clone, Debug)]
 pub struct UnionFind<V = Size> {
-    data: Vec<UFNode<V>>
+    parent: Vec<usize>,
+    data: Vec<Option<V>>
 }
 
 impl<T: UFValue = Size> UnionFind<T> {
     /// Creates empty `UnionFind` struct.
     #[inline]
-    pub fn new(len: usize) -> UnionFind<T>
-        where T: Default
-    {
-        UnionFind {
-            data: (0 .. len)
-                .map(|_| UFNode::Value(Default::default()))
-                .collect()
-        }
+    pub fn new(len: usize) -> UnionFind<T> where T: Default {
+        Self::from_iter((0..len).map(|_| Default::default()))
     }
 
     /// Returns the size of `self`.
@@ -102,19 +70,15 @@ impl<T: UFValue = Size> UnionFind<T> {
         if k0 == k1 { return false; }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let v0 = mem::replace(&mut self.data[k0], UFNode::Key(usize::MAX)).unwrap();
-        let v1 = mem::replace(&mut self.data[k1], UFNode::Key(usize::MAX)).unwrap();
+        let v0 = mem::replace(&mut self.data[k0], None).unwrap();
+        let v1 = mem::replace(&mut self.data[k1], None).unwrap();
 
-        match UFValue::merge(v0, v1) {
-            Merge::Left(val) => {
-                self.data[k0] = UFNode::Value(val);
-                self.data[k1] = UFNode::Key(k0);
-            }
-            Merge::Right(val) => {
-                self.data[k1] = UFNode::Value(val);
-                self.data[k0] = UFNode::Key(k1);
-            }
-        }
+        let (parent, child, val) = match UFValue::merge(v0, v1) {
+            Merge::Left(val) => (k0, k1, val),
+            Merge::Right(val) => (k1, k0, val)
+        };
+        self.data[parent] = Some(val);
+        self.parent[child] = parent;
 
         true
     }
@@ -122,45 +86,49 @@ impl<T: UFValue = Size> UnionFind<T> {
     /// Returns `true` if two keys contained by the same set (find operation).
     #[inline]
     pub fn find(&mut self, key0: usize, key1: usize) -> bool {
-         self.get_key(key0) == self.get_key(key1)
+        self.get_key(key0) == self.get_key(key1)
     }
 
     /// Returns the reference to the value of the set that the key belongs to.
     #[inline]
     pub fn get(&mut self, key: usize) -> &T {
         let root_key = self.get_key(key);
-        self.data[root_key].get()
+        self.data[root_key].as_ref().unwrap()
     }
 
     /// Returns the mutable reference to the value of the set that the key belongs to.
     #[inline]
     pub fn get_mut(&mut self, key: usize) -> &mut T {
         let root_key = self.get_key(key);
-        self.data[root_key].get_mut()
+        self.data[root_key].as_mut().unwrap()
     }
 
     fn get_key(&mut self, key: usize) -> usize {
-        let mut cur_key = key;
+        let p = self.parent[key];
+        if key == p { return key }
+
+        let mut cur_key = p;
         loop {
-            match self.data[cur_key] {
-                UFNode::Value(_) => {
-                    if key != cur_key {
-                        self.data[key] = UFNode::Key(cur_key);
-                    }
-                    return cur_key;
-                }
-                UFNode::Key(k) => {
-                    cur_key = k;
-                }
-            }
+            let p = self.parent[cur_key];
+            if p == cur_key { break }
+
+            self.parent[cur_key] = self.parent[p];
+            cur_key = p;
         }
+
+        self.parent[key] = cur_key;
+        cur_key
     }
 }
 
 impl<A: UFValue> FromIterator<A> for UnionFind<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> UnionFind<A> {
-        UnionFind { data: iterator.into_iter().map(UFNode::Value).collect() }
+        let data = iterator.into_iter().map(Some).collect::<Vec<_>>();
+        UnionFind {
+            parent: (0..data.len()).collect(),
+            data: data
+        }
     }
 }
 
