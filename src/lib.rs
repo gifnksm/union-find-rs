@@ -196,163 +196,158 @@ mod tests {
 #[cfg(all(test, feature = "nightly"))]
 mod bench {
     extern crate test;
-    extern crate rand;
 
-    use self::test::Bencher;
-    use self::rand::distributions::{IndependentSample, Range};
-    use super::{UnionFind, Size};
+    use std::io::{BufRead, BufReader};
+    use std::fs::File;
+    use ::{UnionFind, Size};
 
-    fn union_short_trail(uf: &mut UnionFind<Size>) {
-        for i in 1 .. uf.size() {
-            uf.union(0, i);
-        }
-    }
+    fn read_file(name: &str) -> (usize, Vec<(usize, usize)>) {
+        let mut reader = BufReader::new(File::open(name).unwrap());
+        let mut buf = String::new();
 
-    fn union_long_trail(uf: &mut UnionFind<Size>) {
-        let mut rng = rand::thread_rng();
-        let between = Range::new(0, uf.size());
+        let _ = reader.read_line(&mut buf).unwrap();
+        let num = buf.trim().parse::<usize>().unwrap();
+        buf.clear();
 
-        for _ in 0..uf.size() {
-            let a = between.ind_sample(&mut rng);
-            let b = between.ind_sample(&mut rng);
-            uf.union(a, b);
-       }
-    }
+        let mut conn = vec![];
 
-    #[bench]
-    fn bench_union_short_trail(bencher: &mut Bencher) {
-        bencher.iter(|| {
-            let mut uf = UnionFind::<Size>::new(1024);
-            union_short_trail(&mut uf);
-        })
-    }
-
-    #[bench]
-    fn bench_union_long_trail(bencher: &mut Bencher) {
-        bencher.iter(|| {
-            let mut uf = UnionFind::<Size>::new(1024);
-            union_long_trail(&mut uf);
-        })
-    }
-
-
-    fn find_interleave(uf: &UnionFind<Size>, n: usize) -> UnionFind<Size> {
-        let mut uf = uf.clone();
-        for _ in 0..n {
-            for i in 1 .. uf.size() {
-                uf.find(0, i);
+        while reader.read_line(&mut buf).unwrap() > 0 {
+            {
+                let mut sp = buf.trim().split_whitespace();
+                let a = sp.next().unwrap().parse::<usize>().unwrap();
+                let b = sp.next().unwrap().parse::<usize>().unwrap();
+                conn.push((a, b));
             }
+
+            buf.clear();
         }
-        uf
+
+        (num, conn)
     }
 
-    fn find_repeat(uf: &UnionFind<Size>, n: usize) -> UnionFind<Size> {
-        let mut uf = uf.clone();
-        for i in 1 .. uf.size() {
-            for _ in 0..n {
-                uf.find(0, i);
+    fn union(uf: &mut UnionFind<Size>, conn: &[(usize, usize)]) {
+        for &(p, q) in conn { uf.union(p, q); }
+    }
+
+    mod union {
+        use ::bench::test::Bencher;
+        use ::{UnionFind, Size};
+        use std::mem;
+
+        fn do_benchmark(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)]) {
+            let uf = UnionFind::<Size>::new(size);
+            bencher.bytes = (conn.len() * mem::size_of::<usize>()) as u64;
+            bencher.iter(|| {
+                let mut uf = uf.clone();
+                super::union(&mut uf, conn);
+                uf
+            });
+        }
+
+        fn do_benchmark2(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)]) {
+            let mut uf = UnionFind::<Size>::new(size);
+            super::union(&mut uf, conn);
+            bencher.bytes = (conn.len() * mem::size_of::<usize>()) as u64;
+            bencher.iter(|| {
+                let mut uf = uf.clone();
+                super::union(&mut uf, conn);
+                uf
+            });
+        }
+
+        #[bench]
+        fn tiny(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/tinyUF.txt");
+            do_benchmark(bencher, size, &conn);
+        }
+        #[bench]
+        fn medium(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/mediumUF.txt");
+            do_benchmark(bencher, size, &conn);
+        }
+        #[bench]
+        fn large(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/largeUF.txt");
+            do_benchmark(bencher, size, &conn);
+        }
+        #[bench]
+        fn tiny2(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/tinyUF.txt");
+            do_benchmark2(bencher, size, &conn);
+        }
+        #[bench]
+        fn medium2(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/mediumUF.txt");
+            do_benchmark2(bencher, size, &conn);
+        }
+        #[bench]
+        fn large2(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/largeUF.txt");
+            do_benchmark2(bencher, size, &conn);
+        }
+    }
+
+    mod find {
+        use ::bench::test::Bencher;
+        use ::{UnionFind, Size};
+        use std::mem;
+
+        fn do_benchmark(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)]) {
+            let mut uf = UnionFind::<Size>::new(size);
+            super::union(&mut uf, conn);
+            bencher.bytes = (size * mem::size_of::<usize>()) as u64;
+            bencher.iter(|| {
+                let mut uf = uf.clone();
+                for i in 0..uf.size() {
+                    let _ = uf.find(0, i);
+                }
+                uf
+            });
+        }
+        fn do_benchmark2(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)]) {
+            let mut uf = UnionFind::<Size>::new(size);
+            super::union(&mut uf, conn);
+            for i in 0..uf.size() {
+                let _ = uf.find(0, i);
             }
+            bencher.bytes = (size * mem::size_of::<usize>()) as u64;
+            bencher.iter(|| {
+                let mut uf = uf.clone();
+                for i in 0..uf.size() {
+                    let _ = uf.find(0, i);
+                }
+                uf
+            });
         }
-        uf
-    }
-
-    #[bench]
-    fn bench_find_short_trail_1_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 1));
-    }
-    #[bench]
-    fn bench_find_long_trail_1_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 1));
-    }
-    #[bench]
-    fn bench_find_short_trail_1_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 1));
-    }
-    #[bench]
-    fn bench_find_long_trail_1_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 1));
-    }
-
-    #[bench]
-    fn bench_find_short_trail_10_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 10));
-    }
-    #[bench]
-    fn bench_find_long_trail_10_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 10));
-    }
-    #[bench]
-    fn bench_find_short_trail_10_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 10));
-    }
-    #[bench]
-    fn bench_find_long_trail_10_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 10));
-    }
-
-    #[bench]
-    fn bench_find_short_trail_100_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 100));
-    }
-    #[bench]
-    fn bench_find_long_trail_100_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 100));
-    }
-    #[bench]
-    fn bench_find_short_trail_100_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 100));
-    }
-    #[bench]
-    fn bench_find_long_trail_100_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 100));
-    }
-
-    #[bench]
-    fn bench_find_short_trail_1000_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 1000));
-    }
-    #[bench]
-    fn bench_find_long_trail_1000_interleave(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_interleave(&uf, 1000));
-    }
-    #[bench]
-    fn bench_find_short_trail_1000_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_short_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 1000));
-    }
-    #[bench]
-    fn bench_find_long_trail_1000_repeat(bencher: &mut Bencher) {
-        let mut uf = UnionFind::<Size>::new(1024);
-        union_long_trail(&mut uf);
-        bencher.iter(|| find_repeat(&uf, 1000));
+        #[bench]
+        fn tiny(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/tinyUF.txt");
+            do_benchmark(bencher, size, &conn);
+        }
+        #[bench]
+        fn medium(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/mediumUF.txt");
+            do_benchmark(bencher, size, &conn);
+        }
+        #[bench]
+        fn large(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/largeUF.txt");
+            do_benchmark(bencher, size, &conn);
+        }
+        #[bench]
+        fn tiny2(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/tinyUF.txt");
+            do_benchmark2(bencher, size, &conn);
+        }
+        #[bench]
+        fn medium2(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/mediumUF.txt");
+            do_benchmark2(bencher, size, &conn);
+        }
+        #[bench]
+        fn large2(bencher: &mut Bencher) {
+            let (size, conn) = super::read_file("etc/largeUF.txt");
+            do_benchmark2(bencher, size, &conn);
+        }
     }
 }
