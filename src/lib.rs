@@ -65,8 +65,8 @@ impl<T: UFValue = Size> UnionFind<T> {
     /// Returns `true` if these keys are belonged to different sets.
     #[inline]
     pub fn union(&mut self, key0: usize, key1: usize) -> bool {
-        let k0 = self.get_key(key0);
-        let k1 = self.get_key(key1);
+        let k0 = self.find(key0);
+        let k1 = self.find(key1);
         if k0 == k1 { return false; }
 
         // Temporary replace with dummy to move out the elements of the vector.
@@ -83,27 +83,9 @@ impl<T: UFValue = Size> UnionFind<T> {
         true
     }
 
-    /// Returns `true` if two keys contained by the same set (find operation).
+    /// Returns the identifier of the set that the key belongs to.
     #[inline]
-    pub fn find(&mut self, key0: usize, key1: usize) -> bool {
-        self.get_key(key0) == self.get_key(key1)
-    }
-
-    /// Returns the reference to the value of the set that the key belongs to.
-    #[inline]
-    pub fn get(&mut self, key: usize) -> &T {
-        let root_key = self.get_key(key);
-        self.data[root_key].as_ref().unwrap()
-    }
-
-    /// Returns the mutable reference to the value of the set that the key belongs to.
-    #[inline]
-    pub fn get_mut(&mut self, key: usize) -> &mut T {
-        let root_key = self.get_key(key);
-        self.data[root_key].as_mut().unwrap()
-    }
-
-    fn get_key(&mut self, key: usize) -> usize {
+    pub fn find(&mut self, key: usize) -> usize {
         let p = self.parent[key];
         if key == p { return key }
 
@@ -118,6 +100,20 @@ impl<T: UFValue = Size> UnionFind<T> {
 
         self.parent[key] = cur_key;
         cur_key
+    }
+
+    /// Returns the reference to the value of the set that the key belongs to.
+    #[inline]
+    pub fn get(&mut self, key: usize) -> &T {
+        let root_key = self.find(key);
+        self.data[root_key].as_ref().unwrap()
+    }
+
+    /// Returns the mutable reference to the value of the set that the key belongs to.
+    #[inline]
+    pub fn get_mut(&mut self, key: usize) -> &mut T {
+        let root_key = self.find(key);
+        self.data[root_key].as_mut().unwrap()
     }
 }
 
@@ -141,10 +137,10 @@ mod tests {
         let mut uf = UnionFind::new(100);
         assert_eq!(&Size(1), uf.get(0));
         assert_eq!(&Size(1), uf.get(1));
-        assert!(!uf.find(0, 1));
-        assert!(!uf.find(1, 2));
+        assert!(uf.find(0) != uf.find(1));
+        assert!(uf.find(1) != uf.find(2));
         assert!(uf.union(0, 1));
-        assert!(uf.find(0, 1));
+        assert!(uf.find(0) == uf.find(1));
         assert_eq!(&Size(2), uf.get(0));
         assert_eq!(&Size(2), uf.get(1));
         assert_eq!(&Size(1), uf.get(2));
@@ -156,8 +152,8 @@ mod tests {
         assert_eq!(&Size(3), uf.get(0));
         assert_eq!(&Size(3), uf.get(1));
         assert_eq!(&Size(3), uf.get(2));
-        assert!(uf.find(0, 1));
-        assert!(uf.find(2, 1));
+        assert!(uf.find(0) == uf.find(1));
+        assert!(uf.find(2) == uf.find(1));
     }
 }
 
@@ -267,7 +263,7 @@ mod bench {
             bencher.iter(|| {
                 let mut uf = uf.clone();
                 for i in 0..uf.size() {
-                    let _ = uf.find(0, i);
+                    let _ = uf.find(i);
                 }
                 uf
             });
@@ -276,13 +272,13 @@ mod bench {
             let mut uf = UnionFind::<Size>::new(size);
             super::union(&mut uf, conn);
             for i in 0..uf.size() {
-                let _ = uf.find(0, i);
+                let _ = uf.find(i);
             }
             bencher.bytes = (size * mem::size_of::<usize>()) as u64;
             bencher.iter(|| {
                 let mut uf = uf.clone();
                 for i in 0..uf.size() {
-                    let _ = uf.find(0, i);
+                    let _ = uf.find(i);
                 }
                 uf
             });
