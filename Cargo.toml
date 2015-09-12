@@ -1,13 +1,14 @@
 [package]
 
 name = "union-find"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["gifnksm <makoto.nksm+github@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/gifnksm/union-find-rs"
 description = "Struct and methods for union-find operation."
 documentation = "https://gifnksm.github.io/union-find-rs"
+exclude = ["etc/*"]
 
 [features]
 nightly = []
