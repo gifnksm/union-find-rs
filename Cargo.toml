@@ -12,3 +12,6 @@ exclude = ["etc/*"]
 
 [features]
 nightly = []
+
+[dev-dependencies]
+lazy_static = "*"

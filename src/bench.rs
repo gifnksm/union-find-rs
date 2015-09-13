@@ -3,175 +3,142 @@ extern crate test;
 use std::io::{BufRead, BufReader};
 use std::fs::File;
 use ::{UnionFind, UfValue};
+use self::test::Bencher;
 
-fn read_file(name: &str) -> (usize, Vec<(usize, usize)>) {
-    let mut reader = BufReader::new(File::open(name).unwrap());
-    let mut buf = String::new();
+lazy_static! {
+    pub static ref TINY: Input = Input::from_file("etc/tinyUF.txt");
+    pub static ref MEDIUM: Input = Input::from_file("etc/mediumUF.txt");
+    pub static ref LARGE: Input = Input::from_file("etc/largeUF.txt");
+}
 
-    let _ = reader.read_line(&mut buf).unwrap();
-    let num = buf.trim().parse::<usize>().unwrap();
-    buf.clear();
+#[derive(Clone, Debug)]
+pub struct Input {
+    size: usize,
+    conn: Vec<(usize, usize)>
+}
 
-    let mut conn = vec![];
+impl Input {
+    fn from_file(name: &str) -> Input {
+        let mut reader = BufReader::new(File::open(name).unwrap());
+        let mut buf = String::new();
 
-    while reader.read_line(&mut buf).unwrap() > 0 {
-        {
-            let mut sp = buf.trim().split_whitespace();
-            let a = sp.next().unwrap().parse::<usize>().unwrap();
-            let b = sp.next().unwrap().parse::<usize>().unwrap();
-            conn.push((a, b));
+        let _ = reader.read_line(&mut buf).unwrap();
+        let size = buf.trim().parse::<usize>().unwrap();
+        buf.clear();
+
+        let mut conn = vec![];
+
+        while reader.read_line(&mut buf).unwrap() > 0 {
+            {
+                let mut sp = buf.trim().split_whitespace();
+                let a = sp.next().unwrap().parse::<usize>().unwrap();
+                let b = sp.next().unwrap().parse::<usize>().unwrap();
+                conn.push((a, b));
+            }
+
+            buf.clear();
         }
 
-        buf.clear();
+        Input { size: size, conn: conn }
     }
 
-    (num, conn)
-}
-
-fn union<T, V> (uf: &mut T, conn: &[(usize, usize)])
-    where T: UnionFind<V>, V: UfValue
-{
-    for &(p, q) in conn { uf.union(p, q); }
-}
-
-pub mod union {
-    use ::bench::test::Bencher;
-    use ::{UfValue, UnionFind};
-    use std::mem;
-
-    fn do_benchmark<T, V>(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)])
-        where T: UnionFind<V> + Clone, V: UfValue
+    fn union<T, V>(&self, uf: &mut T)
+        where T: UnionFind<V>, V: UfValue
     {
-        let uf = T::new(size);
-        bencher.bytes = (conn.len() * mem::size_of::<usize>()) as u64;
-        bencher.iter(|| {
-            let mut uf = uf.clone();
-            super::union(&mut uf, conn);
-            uf
-        });
+        for &(p, q) in &self.conn {
+            uf.union(p, q);
+        }
     }
-
-    fn do_benchmark2<T, V>(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)])
-        where T: UnionFind<V> + Clone, V: UfValue
+    fn find_all<T, V>(&self, uf: &mut T)
+        where T: UnionFind<V>, V: UfValue
     {
-        let mut uf = T::new(size);
-        super::union(&mut uf, conn);
-        bencher.bytes = (conn.len() * mem::size_of::<usize>()) as u64;
-        bencher.iter(|| {
-            let mut uf = uf.clone();
-            super::union(&mut uf, conn);
-            uf
-        });
-    }
-
-    pub fn tiny<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/tinyUF.txt");
-        do_benchmark::<T, V>(bencher, size, &conn);
-    }
-    pub fn medium<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/mediumUF.txt");
-        do_benchmark::<T, V>(bencher, size, &conn);
-    }
-    pub fn large<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/largeUF.txt");
-        do_benchmark::<T, V>(bencher, size, &conn);
-    }
-    pub fn tiny2<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/tinyUF.txt");
-        do_benchmark2::<T, V>(bencher, size, &conn);
-    }
-    pub fn medium2<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/mediumUF.txt");
-        do_benchmark2::<T, V>(bencher, size, &conn);
-    }
-    pub fn large2<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/largeUF.txt");
-        do_benchmark2::<T, V>(bencher, size, &conn);
-    }
-}
-
-pub mod find {
-    use ::bench::test::Bencher;
-    use ::{UnionFind, UfValue};
-    use std::mem;
-
-    fn do_benchmark<T, V>(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)])
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let mut uf = T::new(size);
-        super::union(&mut uf, conn);
-        bencher.bytes = (size * mem::size_of::<usize>()) as u64;
-        bencher.iter(|| {
-            let mut uf = uf.clone();
-            for i in 0..uf.size() {
-                let _ = uf.find(i);
-            }
-            uf
-        });
-    }
-    fn do_benchmark2<T, V>(bencher: &mut Bencher, size: usize, conn: &[(usize, usize)])
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let mut uf = T::new(size);
-        super::union(&mut uf, conn);
         for i in 0..uf.size() {
             let _ = uf.find(i);
         }
-        bencher.bytes = (size * mem::size_of::<usize>()) as u64;
+    }
+
+    pub fn bench_union<T, V>(&self, bencher: &mut Bencher)
+        where T: UnionFind<V> + Clone, V: UfValue
+    {
+        let uf = T::new(self.size);
+        bencher.bytes = self.conn.len() as u64;
         bencher.iter(|| {
             let mut uf = uf.clone();
-            for i in 0..uf.size() {
-                let _ = uf.find(i);
-            }
+            self.union(&mut uf);
             uf
         });
     }
-    pub fn tiny<T, V>(bencher: &mut Bencher)
+
+    pub fn bench_union2<T, V>(&self, bencher: &mut Bencher)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let (size, conn) = super::read_file("etc/tinyUF.txt");
-        do_benchmark::<T, V>(bencher, size, &conn);
+        let mut uf = T::new(self.size);
+        self.union(&mut uf);
+        bencher.bytes = self.conn.len() as u64;
+        bencher.iter(|| {
+            let mut uf = uf.clone();
+            self.union(&mut uf);
+            uf
+        });
     }
-    pub fn medium<T, V>(bencher: &mut Bencher)
+
+    pub fn bench_find<T, V>(&self, bencher: &mut Bencher)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let (size, conn) = super::read_file("etc/mediumUF.txt");
-        do_benchmark::<T, V>(bencher, size, &conn);
+        let mut uf = T::new(self.size);
+        self.union(&mut uf);
+        bencher.bytes = self.size as u64;
+        bencher.iter(|| {
+            let mut uf = uf.clone();
+            self.find_all(&mut uf);
+            uf
+        });
     }
-    pub fn large<T, V>(bencher: &mut Bencher)
+
+    pub fn bench_find2<T, V>(&self, bencher: &mut Bencher)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let (size, conn) = super::read_file("etc/largeUF.txt");
-        do_benchmark::<T, V>(bencher, size, &conn);
+        let mut uf = T::new(self.size);
+        self.union(&mut uf);
+        self.find_all(&mut uf);
+        bencher.bytes = self.size as u64;
+        bencher.iter(|| {
+            let mut uf = uf.clone();
+            self.find_all(&mut uf);
+            uf
+        });
     }
-    pub fn tiny2<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/tinyUF.txt");
-        do_benchmark2::<T, V>(bencher, size, &conn);
+}
+
+macro_rules! bench_fns_for_type_with_input {
+    ($ty:ty, $input:path) => {
+        #[bench]
+        fn union(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_union::<$ty, _>(bencher);
+        }
+        #[bench]
+        fn union2(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_union2::<$ty, _>(bencher);
+        }
+        #[bench]
+        fn find(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_find::<$ty, _>(bencher);
+        }
+        #[bench]
+        fn find2(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_find2::<$ty, _>(bencher);
+        }
     }
-    pub fn medium2<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/mediumUF.txt");
-        do_benchmark2::<T, V>(bencher, size, &conn);
+}
+
+macro_rules! bench_fns_for_type {
+    ($ty:ty) => {
+        mod tiny { bench_fns_for_type_with_input!($ty, ::bench::TINY); }
+        mod medium { bench_fns_for_type_with_input!($ty, ::bench::MEDIUM); }
+        mod large { bench_fns_for_type_with_input!($ty, ::bench::LARGE); }
     }
-    pub fn large2<T, V>(bencher: &mut Bencher)
-        where T: UnionFind<V> + Clone, V: UfValue
-    {
-        let (size, conn) = super::read_file("etc/largeUF.txt");
-        do_benchmark2::<T, V>(bencher, size, &conn);
-    }
+}
+
+mod quick_union {
+    bench_fns_for_type!(::QuickUnionUf<::Size>);
 }

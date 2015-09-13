@@ -22,3 +22,10 @@ pub fn union_find<T: UnionFind<Size>>() {
     assert!(uf.find(0) == uf.find(1));
     assert!(uf.find(2) == uf.find(1));
 }
+
+mod quick_union {
+    #[test]
+    fn union_find() {
+        super::union_find::<::QuickUnionUf<::Size>>();
+    }
+}

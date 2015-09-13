@@ -10,6 +10,12 @@
 #![warn(unused_results)]
 
 #![cfg_attr(all(test, feature = "nightly"), feature(test))]
+#![cfg_attr(all(test, feature = "nightly"), feature(const_fn))]
+
+#[cfg(all(test, feature = "nightly"))]
+#[macro_use]
+#[no_link]
+extern crate lazy_static;
 
 use std::default::Default;
 use std::iter::FromIterator;
@@ -22,7 +28,7 @@ pub trait UfValue: Sized + Default {
     fn merge(lval: Self, rval: Self) -> Merge<Self>;
 }
 
-/// Return value of the `UfValue::merege`
+/// Return value of the `UfValue::merge`
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Debug)]
 pub enum Merge<T> {
@@ -78,6 +84,5 @@ pub use quick_union::QuickUnionUf;
 
 #[cfg(test)]
 mod tests;
-
 #[cfg(all(test, feature = "nightly"))]
 mod bench;
