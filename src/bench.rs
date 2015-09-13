@@ -57,7 +57,7 @@ impl Input {
         }
     }
 
-    pub fn bench_union<T, V>(&self, bencher: &mut Bencher)
+    pub fn bench_union1<T, V>(&self, bencher: &mut Bencher)
         where T: UnionFind<V> + Clone, V: UfValue
     {
         let uf = T::new(self.size);
@@ -68,7 +68,6 @@ impl Input {
             uf
         });
     }
-
     pub fn bench_union2<T, V>(&self, bencher: &mut Bencher)
         where T: UnionFind<V> + Clone, V: UfValue
     {
@@ -81,8 +80,21 @@ impl Input {
             uf
         });
     }
+    pub fn bench_union3<T, V>(&self, bencher: &mut Bencher)
+        where T: UnionFind<V> + Clone, V: UfValue
+    {
+        let mut uf = T::new(self.size);
+        self.union(&mut uf);
+        self.union(&mut uf);
+        bencher.bytes = self.conn.len() as u64;
+        bencher.iter(|| {
+            let mut uf = uf.clone();
+            self.union(&mut uf);
+            uf
+        });
+    }
 
-    pub fn bench_find<T, V>(&self, bencher: &mut Bencher)
+    pub fn bench_find1<T, V>(&self, bencher: &mut Bencher)
         where T: UnionFind<V> + Clone, V: UfValue
     {
         let mut uf = T::new(self.size);
@@ -94,7 +106,6 @@ impl Input {
             uf
         });
     }
-
     pub fn bench_find2<T, V>(&self, bencher: &mut Bencher)
         where T: UnionFind<V> + Clone, V: UfValue
     {
@@ -108,25 +119,47 @@ impl Input {
             uf
         });
     }
+    pub fn bench_find3<T, V>(&self, bencher: &mut Bencher)
+        where T: UnionFind<V> + Clone, V: UfValue
+    {
+        let mut uf = T::new(self.size);
+        self.union(&mut uf);
+        self.find_all(&mut uf);
+        self.find_all(&mut uf);
+        bencher.bytes = self.size as u64;
+        bencher.iter(|| {
+            let mut uf = uf.clone();
+            self.find_all(&mut uf);
+            uf
+        });
+    }
 }
 
 macro_rules! bench_fns_for_type_with_input {
     ($ty:ty, $input:path) => {
         #[bench]
-        fn union(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_union::<$ty, _>(bencher);
+        fn union1(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_union1::<$ty, _>(bencher);
         }
         #[bench]
         fn union2(bencher: &mut ::bench::test::Bencher) {
             $input.bench_union2::<$ty, _>(bencher);
         }
         #[bench]
-        fn find(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_find::<$ty, _>(bencher);
+        fn union3(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_union3::<$ty, _>(bencher);
+        }
+        #[bench]
+        fn find1(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_find1::<$ty, _>(bencher);
         }
         #[bench]
         fn find2(bencher: &mut ::bench::test::Bencher) {
             $input.bench_find2::<$ty, _>(bencher);
+        }
+        #[bench]
+        fn find3(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_find3::<$ty, _>(bencher);
         }
     }
 }
@@ -139,6 +172,11 @@ macro_rules! bench_fns_for_type {
     }
 }
 
-mod quick_union {
-    bench_fns_for_type!(::QuickUnionUf<::Size>);
+mod quick_union { bench_fns_for_type!(::QuickUnionUf<::Size>); }
+mod quick_find {
+    // bench_fns_for_type!(::QuickFindUf<::Size>);
+    mod tiny { bench_fns_for_type_with_input!(::QuickFindUf<::Size>, ::bench::TINY); }
+    mod medium { bench_fns_for_type_with_input!(::QuickFindUf<::Size>, ::bench::MEDIUM); }
+    // large is too large to execute
+    // mod large { bench_fns_for_type_with_input!(::QuickFindUf<::Size>, ::bench::LARGE); }
 }

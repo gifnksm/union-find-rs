@@ -29,3 +29,9 @@ mod quick_union {
         super::union_find::<::QuickUnionUf<::Size>>();
     }
 }
+mod quick_find {
+    #[test]
+    fn union_find() {
+        super::union_find::<::QuickFindUf<::Size>>();
+    }
+}

@@ -81,6 +81,8 @@ pub trait UnionFind<V: UfValue>: FromIterator<V> + Sized {
 
 mod quick_union;
 pub use quick_union::QuickUnionUf;
+mod quick_find;
+pub use quick_find::QuickFindUf;
 
 #[cfg(test)]
 mod tests;
