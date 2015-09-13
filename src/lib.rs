@@ -1,8 +1,13 @@
 //! Struct and methods for union-find operation.
 
-#![warn(bad_style, missing_docs,
-        unused, unused_extern_crates, unused_import_braces,
-        unused_qualifications, unused_results)]
+#![warn(missing_copy_implementations)]
+#![warn(missing_debug_implementations)]
+#![warn(trivial_casts)]
+#![warn(trivial_numeric_casts)]
+#![warn(unused_extern_crates)]
+#![warn(unused_import_braces)]
+#![warn(unused_qualifications)]
+#![warn(unused_results)]
 
 #![cfg_attr(all(test, feature = "nightly"), feature(test))]
 
@@ -19,6 +24,7 @@ pub trait UfValue: Sized + Default {
 
 /// Return value of the `UfValue::merege`
 #[allow(missing_docs)]
+#[derive(Copy, Clone, Debug)]
 pub enum Merge<T> {
     Left(T), Right(T)
 }
