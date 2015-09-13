@@ -1,13 +1,19 @@
 use std::iter::FromIterator;
-use std::{mem, usize};
+use std::mem;
 use {UfValue, UnionFind, Merge};
+
+#[derive(Copy, Clone, Debug)]
+struct Payload<V> {
+    data: V,
+    link_last_child: usize
+}
 
 /// Union-Find implementation with quick find operation.
 #[derive(Debug)]
 pub struct QuickFindUf<V> {
-    parent: Vec<usize>,
-    data: Vec<(Option<V>, usize)>,
-    next: Vec<usize>
+    link_root: Vec<usize>,
+    link_sibling: Vec<usize>,
+    payload: Vec<Option<Payload<V>>>
 }
 
 impl<V> Clone for QuickFindUf<V>
@@ -16,23 +22,23 @@ impl<V> Clone for QuickFindUf<V>
     #[inline]
     fn clone(&self) -> QuickFindUf<V> {
         QuickFindUf {
-            parent: self.parent.clone(),
-            data: self.data.clone(),
-            next: self.next.clone()
+            link_root: self.link_root.clone(),
+            link_sibling: self.link_sibling.clone(),
+            payload: self.payload.clone()
         }
     }
 
     #[inline]
     fn clone_from(&mut self, other: &QuickFindUf<V>) {
-        self.parent.clone_from(&other.parent);
-        self.data.clone_from(&other.data);
-        self.next.clone_from(&other.next);
+        self.link_root.clone_from(&other.link_root);
+        self.link_sibling.clone_from(&other.link_sibling);
+        self.payload.clone_from(&other.payload);
     }
 }
 
 impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
     #[inline]
-    fn size(&self) -> usize { self.data.len() }
+    fn size(&self) -> usize { self.payload.len() }
 
     #[inline]
     fn union(&mut self, key0: usize, key1: usize) -> bool {
@@ -41,56 +47,65 @@ impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
         if k0 == k1 { return false; }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let (v0, l0) = mem::replace(&mut self.data[k0], (None, usize::MAX));
-        let (v1, l1) = mem::replace(&mut self.data[k1], (None, usize::MAX));
-        let v0 = v0.unwrap();
-        let v1 = v1.unwrap();
+        let p0 = mem::replace(&mut self.payload[k0], None).unwrap();
+        let p1 = mem::replace(&mut self.payload[k1], None).unwrap();
+        let c0 = p0.link_last_child;
+        let c1 = p1.link_last_child;
 
-        let (parent, child, val, last) = match UfValue::merge(v0, v1) {
-            Merge::Left(val) => (k0, k1, val, l0),
-            Merge::Right(val) => (k1, k0, val, l1)
+        let merged = UfValue::merge(p0.data, p1.data);
+        let (parent_root, child_root, val, last) = match merged {
+            Merge::Left(val) => (k0, k1, val, c0),
+            Merge::Right(val) => (k1, k0, val, c1)
         };
 
-        self.next[last] = child;
+        self.link_sibling[last] = child_root;
 
-        let mut elem = child;
-        while self.next[elem] != elem {
-            debug_assert_eq!(self.parent[elem], child);
-            self.parent[elem] = parent;
-            elem = self.next[elem];
+        let mut elem = child_root;
+        while self.link_sibling[elem] != elem {
+            debug_assert_eq!(self.link_root[elem], child_root);
+            self.link_root[elem] = parent_root;
+            elem = self.link_sibling[elem];
         }
-        debug_assert_eq!(self.parent[elem], child);
-        self.parent[elem] = parent;
-        self.data[parent] = (Some(val), elem);
+        debug_assert_eq!(self.link_root[elem], child_root);
+        self.link_root[elem] = parent_root;
+        self.payload[parent_root] = Some(Payload {
+            data: val,
+            link_last_child: elem
+        });
 
         true
     }
 
     #[inline]
-    fn find(&mut self, key: usize) -> usize { self.parent[key] }
+    fn find(&mut self, key: usize) -> usize { self.link_root[key] }
 
     #[inline]
     fn get(&mut self, key: usize) -> &V {
         let root_key = self.find(key);
-        self.data[root_key].0.as_ref().unwrap()
+        &self.payload[root_key].as_ref().unwrap().data
     }
 
     #[inline]
     fn get_mut(&mut self, key: usize) -> &mut V {
         let root_key = self.find(key);
-        self.data[root_key].0.as_mut().unwrap()
+        &mut self.payload[root_key].as_mut().unwrap().data
     }
 }
 
 impl<A: UfValue> FromIterator<A> for QuickFindUf<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> QuickFindUf<A> {
-        let data = iterator.into_iter().map(Some).zip(0..).collect::<Vec<_>>();
-        let len = data.len();
+        let payload = iterator
+            .into_iter()
+            .zip(0..)
+            .map(|(data, link)| Payload { data: data, link_last_child: link })
+            .map(Some)
+            .collect::<Vec<_>>();
+        let len = payload.len();
         QuickFindUf {
-            parent: (0..len).collect(),
-            data: data,
-            next: (0..len).collect()
+            link_root: (0..len).collect(),
+            link_sibling: (0..len).collect(),
+            payload: payload
         }
     }
 }
