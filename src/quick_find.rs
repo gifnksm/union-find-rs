@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 use std::mem;
-use {UfValue, UnionFind, Merge};
+use {Union, UnionFind, UnionResult};
 
 #[derive(Copy, Clone, Debug)]
 struct Payload<V> {
@@ -17,7 +17,7 @@ pub struct QuickFindUf<V> {
 }
 
 impl<V> Clone for QuickFindUf<V>
-    where V: Clone + UfValue
+    where V: Clone + Union
 {
     #[inline]
     fn clone(&self) -> QuickFindUf<V> {
@@ -36,7 +36,7 @@ impl<V> Clone for QuickFindUf<V>
     }
 }
 
-impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
+impl<V: Union> UnionFind<V> for QuickFindUf<V> {
     #[inline]
     fn size(&self) -> usize { self.payload.len() }
 
@@ -47,15 +47,14 @@ impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
         if k0 == k1 { return false; }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let p0 = mem::replace(&mut self.payload[k0], None).unwrap();
-        let p1 = mem::replace(&mut self.payload[k1], None).unwrap();
-        let c0 = p0.link_last_child;
-        let c1 = p1.link_last_child;
+        let Payload { data: d0, link_last_child: c0 } =
+            mem::replace(&mut self.payload[k0], None).unwrap();
+        let Payload { data: d1, link_last_child: c1 } =
+            mem::replace(&mut self.payload[k1], None).unwrap();
 
-        let merged = UfValue::merge(p0.data, p1.data);
-        let (parent_root, child_root, val, last) = match merged {
-            Merge::Left(val) => (k0, k1, val, c0),
-            Merge::Right(val) => (k1, k0, val, c1)
+        let (root, child_root, val, last) = match Union::union(d0, d1) {
+            UnionResult::Left(val) => (k0, k1, val, c0),
+            UnionResult::Right(val) => (k1, k0, val, c1)
         };
 
         self.link_sibling[last] = child_root;
@@ -63,12 +62,13 @@ impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
         let mut elem = child_root;
         while self.link_sibling[elem] != elem {
             debug_assert_eq!(self.link_root[elem], child_root);
-            self.link_root[elem] = parent_root;
+            self.link_root[elem] = root;
             elem = self.link_sibling[elem];
         }
         debug_assert_eq!(self.link_root[elem], child_root);
-        self.link_root[elem] = parent_root;
-        self.payload[parent_root] = Some(Payload {
+        self.link_root[elem] = root;
+
+        self.payload[root] = Some(Payload {
             data: val,
             link_last_child: elem
         });
@@ -92,7 +92,7 @@ impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
     }
 }
 
-impl<A: UfValue> FromIterator<A> for QuickFindUf<A> {
+impl<A: Union> FromIterator<A> for QuickFindUf<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> QuickFindUf<A> {
         let payload = iterator

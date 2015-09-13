@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 use std::mem;
-use {UfValue, UnionFind, Merge};
+use {Union, UnionFind, UnionResult};
 
 /// Union-Find implementation with quick union operation.
 #[derive(Debug)]
@@ -25,7 +25,7 @@ impl<V: Clone> Clone for QuickUnionUf<V> {
     }
 }
 
-impl<V: UfValue> UnionFind<V> for QuickUnionUf<V> {
+impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
     #[inline]
     fn size(&self) -> usize { self.payload.len() }
 
@@ -39,9 +39,9 @@ impl<V: UfValue> UnionFind<V> for QuickUnionUf<V> {
         let v0 = mem::replace(&mut self.payload[k0], None).unwrap();
         let v1 = mem::replace(&mut self.payload[k1], None).unwrap();
 
-        let (parent, child, val) = match UfValue::merge(v0, v1) {
-            Merge::Left(val) => (k0, k1, val),
-            Merge::Right(val) => (k1, k0, val)
+        let (parent, child, val) = match Union::union(v0, v1) {
+            UnionResult::Left(val) => (k0, k1, val),
+            UnionResult::Right(val) => (k1, k0, val)
         };
         self.payload[parent] = Some(val);
         self.link_parent[child] = parent;
@@ -75,7 +75,7 @@ impl<V: UfValue> UnionFind<V> for QuickUnionUf<V> {
     }
 }
 
-impl<A: UfValue> FromIterator<A> for QuickUnionUf<A> {
+impl<A: Union> FromIterator<A> for QuickUnionUf<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> QuickUnionUf<A> {
         let payload = iterator.into_iter().map(Some).collect::<Vec<_>>();
