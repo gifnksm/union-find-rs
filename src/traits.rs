@@ -1,7 +1,7 @@
 use std::iter::FromIterator;
 
 /// The value that can be contained with `Union`.
-pub trait Union: Sized + Default {
+pub trait Union: Sized {
     /// Union two value into one.
     ///
     /// This is used by `UnionFind::union` operation.

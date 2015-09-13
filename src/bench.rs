@@ -33,7 +33,7 @@ impl<T> Cache<T> {
     }
 
     fn init<V>(&mut self) -> &T
-        where T: UnionFind<V>, V: Union
+        where T: UnionFind<V>, V: Union + Default
     {
         if let None = self.init {
             self.init = Some(self.input.init());
@@ -42,7 +42,7 @@ impl<T> Cache<T> {
     }
 
     fn union1<V>(&mut self) -> &T
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         if let None = self.union1 {
             let mut uf = self.init().clone();
@@ -53,7 +53,7 @@ impl<T> Cache<T> {
     }
 
     fn union2<V>(&mut self) -> &T
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         if let None = self.union2 {
             let mut uf = self.union1().clone();
@@ -64,7 +64,7 @@ impl<T> Cache<T> {
     }
 
     fn find1<V>(&mut self) -> &T
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         if let None = self.find1 {
             let mut uf = self.union1().clone();
@@ -75,7 +75,7 @@ impl<T> Cache<T> {
     }
 
     fn find2<V>(&mut self) -> &T
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         if let None = self.find2 {
             let mut uf = self.union1().clone();
@@ -118,7 +118,7 @@ impl Input {
     }
 
     fn init<T, V>(&self) -> T
-        where T: UnionFind<V>, V: Union
+        where T: UnionFind<V>, V: Union + Default
     {
         T::new(self.size)
     }
@@ -139,7 +139,7 @@ impl Input {
     }
 
     fn bench_clone_from<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         let base = cache.init();
         let mut uf = base.clone();
@@ -148,7 +148,7 @@ impl Input {
         });
     }
     fn bench_union1<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         let base = cache.init();
         let mut uf = base.clone();
@@ -158,7 +158,7 @@ impl Input {
         });
     }
     fn bench_union2<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         let base = cache.union1();
         let mut uf = base.clone();
@@ -168,7 +168,7 @@ impl Input {
         });
     }
     fn bench_union3<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         let base = cache.union2();
         let mut uf = base.clone();
@@ -179,7 +179,7 @@ impl Input {
     }
 
     fn bench_find1<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         let base = cache.union1();
         let mut uf = base.clone();
@@ -189,7 +189,7 @@ impl Input {
         });
     }
     fn bench_find2<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         let base = cache.find1();
         let mut uf = base.clone();
@@ -199,7 +199,7 @@ impl Input {
         });
     }
     fn bench_find3<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
-        where T: UnionFind<V> + Clone, V: Union
+        where T: UnionFind<V> + Clone, V: Union + Default
     {
         let base = cache.find2();
         let mut uf = base.clone();
