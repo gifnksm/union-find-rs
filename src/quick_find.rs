@@ -3,20 +3,34 @@ use std::mem;
 use {UfValue, UnionFind, Merge};
 
 /// Union-Find implementation with quick find operation.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct QuickFindUf<V> {
     parent: Vec<usize>,
     data: Vec<Option<V>>
 }
 
+impl<V> Clone for QuickFindUf<V>
+    where V: Clone + UfValue
+{
+    #[inline]
+    fn clone(&self) -> QuickFindUf<V> {
+        QuickFindUf {
+            parent: self.parent.clone(),
+            data: self.data.clone()
+        }
+    }
+
+    #[inline]
+    fn clone_from(&mut self, other: &QuickFindUf<V>) {
+        self.parent.clone_from(&other.parent);
+        self.data.clone_from(&other.data);
+    }
+}
+
 impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
-    /// Returns the size of `self`.
     #[inline]
     fn size(&self) -> usize { self.data.len() }
 
-    /// Join two sets that contains given keys (Union operation).
-    ///
-    /// Returns `true` if these keys are belonged to different sets.
     #[inline]
     fn union(&mut self, key0: usize, key1: usize) -> bool {
         let k0 = self.find(key0);
@@ -42,18 +56,15 @@ impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
         true
     }
 
-    /// Returns the identifier of the set that the key belongs to.
     #[inline]
     fn find(&mut self, key: usize) -> usize { self.parent[key] }
 
-    /// Returns the reference to the value of the set that the key belongs to.
     #[inline]
     fn get(&mut self, key: usize) -> &V {
         let root_key = self.find(key);
         self.data[root_key].as_ref().unwrap()
     }
 
-    /// Returns the mutable reference to the value of the set that the key belongs to.
     #[inline]
     fn get_mut(&mut self, key: usize) -> &mut V {
         let root_key = self.find(key);

@@ -138,71 +138,74 @@ impl Input {
         }
     }
 
+    fn bench_clone_from<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+        where T: UnionFind<V> + Clone, V: UfValue
+    {
+        let base = cache.init();
+        let mut uf = base.clone();
+        bencher.iter(|| {
+            uf.clone_from(&base);
+        });
+    }
     fn bench_union1<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let uf = cache.init();
-        bencher.bytes = self.conn.len() as u64;
+        let base = cache.init();
+        let mut uf = base.clone();
         bencher.iter(|| {
-            let mut uf = uf.clone();
+            uf.clone_from(&base);
             self.union(&mut uf);
-            uf
         });
     }
     fn bench_union2<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let uf = cache.union1();
-        bencher.bytes = self.conn.len() as u64;
+        let base = cache.union1();
+        let mut uf = base.clone();
         bencher.iter(|| {
-            let mut uf = uf.clone();
+            uf.clone_from(&base);
             self.union(&mut uf);
-            uf
         });
     }
     fn bench_union3<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let uf = cache.union2();
-        bencher.bytes = self.conn.len() as u64;
+        let base = cache.union2();
+        let mut uf = base.clone();
         bencher.iter(|| {
-            let mut uf = uf.clone();
+            uf.clone_from(&base);
             self.union(&mut uf);
-            uf
         });
     }
 
     fn bench_find1<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let uf = cache.union1();
-        bencher.bytes = self.size as u64;
+        let base = cache.union1();
+        let mut uf = base.clone();
         bencher.iter(|| {
-            let mut uf = uf.clone();
+            uf.clone_from(&base);
             self.find_all(&mut uf);
-            uf
         });
     }
     fn bench_find2<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let uf = cache.find1();
-        bencher.bytes = self.size as u64;
+        let base = cache.find1();
+        let mut uf = base.clone();
         bencher.iter(|| {
-            let mut uf = uf.clone();
+            uf.clone_from(&base);
             self.find_all(&mut uf);
-            uf
         });
     }
     fn bench_find3<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
         where T: UnionFind<V> + Clone, V: UfValue
     {
-        let uf = cache.find2();
-        bencher.bytes = self.size as u64;
+        let base = cache.find2();
+        let mut uf = base.clone();
         bencher.iter(|| {
-            let mut uf = uf.clone();
+            uf.clone_from(&base);
             self.find_all(&mut uf);
-            uf
         });
     }
 }
@@ -216,6 +219,10 @@ macro_rules! bench_fns_for_type_with_input {
             static ref CACHE: Mutex<Cache<$ty>> = Mutex::new(Cache::new(&$input));
         }
 
+        #[bench]
+        fn clone_from(bencher: &mut ::bench::test::Bencher) {
+            $input.bench_clone_from::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
+        }
         #[bench]
         fn union1(bencher: &mut ::bench::test::Bencher) {
             $input.bench_union1::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
