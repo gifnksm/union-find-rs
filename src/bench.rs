@@ -259,10 +259,4 @@ macro_rules! bench_fns_for_type {
 }
 
 mod quick_union { bench_fns_for_type!(::QuickUnionUf<::Size>); }
-mod quick_find {
-    // bench_fns_for_type!(::QuickFindUf<::Size>);
-    mod tiny { bench_fns_for_type_with_input!(::QuickFindUf<::Size>, ::bench::TINY); }
-    mod medium { bench_fns_for_type_with_input!(::QuickFindUf<::Size>, ::bench::MEDIUM); }
-    // large is too large to execute
-    // mod large { bench_fns_for_type_with_input!(::QuickFindUf<::Size>, ::bench::LARGE); }
-}
+mod quick_find { bench_fns_for_type!(::QuickFindUf<::Size>); }

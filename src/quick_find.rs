@@ -1,12 +1,13 @@
 use std::iter::FromIterator;
-use std::mem;
+use std::{mem, usize};
 use {UfValue, UnionFind, Merge};
 
 /// Union-Find implementation with quick find operation.
 #[derive(Debug)]
 pub struct QuickFindUf<V> {
     parent: Vec<usize>,
-    data: Vec<Option<V>>
+    data: Vec<(Option<V>, usize)>,
+    next: Vec<usize>
 }
 
 impl<V> Clone for QuickFindUf<V>
@@ -16,7 +17,8 @@ impl<V> Clone for QuickFindUf<V>
     fn clone(&self) -> QuickFindUf<V> {
         QuickFindUf {
             parent: self.parent.clone(),
-            data: self.data.clone()
+            data: self.data.clone(),
+            next: self.next.clone()
         }
     }
 
@@ -24,6 +26,7 @@ impl<V> Clone for QuickFindUf<V>
     fn clone_from(&mut self, other: &QuickFindUf<V>) {
         self.parent.clone_from(&other.parent);
         self.data.clone_from(&other.data);
+        self.next.clone_from(&other.next);
     }
 }
 
@@ -38,20 +41,27 @@ impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
         if k0 == k1 { return false; }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let v0 = mem::replace(&mut self.data[k0], None).unwrap();
-        let v1 = mem::replace(&mut self.data[k1], None).unwrap();
+        let (v0, l0) = mem::replace(&mut self.data[k0], (None, usize::MAX));
+        let (v1, l1) = mem::replace(&mut self.data[k1], (None, usize::MAX));
+        let v0 = v0.unwrap();
+        let v1 = v1.unwrap();
 
-        let (parent, child, val) = match UfValue::merge(v0, v1) {
-            Merge::Left(val) => (k0, k1, val),
-            Merge::Right(val) => (k1, k0, val)
+        let (parent, child, val, last) = match UfValue::merge(v0, v1) {
+            Merge::Left(val) => (k0, k1, val, l0),
+            Merge::Right(val) => (k1, k0, val, l1)
         };
-        self.data[parent] = Some(val);
 
-        for p in &mut self.parent {
-            if *p == child {
-                *p = parent;
-            }
+        self.next[last] = child;
+
+        let mut elem = child;
+        while self.next[elem] != elem {
+            debug_assert_eq!(self.parent[elem], child);
+            self.parent[elem] = parent;
+            elem = self.next[elem];
         }
+        debug_assert_eq!(self.parent[elem], child);
+        self.parent[elem] = parent;
+        self.data[parent] = (Some(val), elem);
 
         true
     }
@@ -62,23 +72,25 @@ impl<V: UfValue> UnionFind<V> for QuickFindUf<V> {
     #[inline]
     fn get(&mut self, key: usize) -> &V {
         let root_key = self.find(key);
-        self.data[root_key].as_ref().unwrap()
+        self.data[root_key].0.as_ref().unwrap()
     }
 
     #[inline]
     fn get_mut(&mut self, key: usize) -> &mut V {
         let root_key = self.find(key);
-        self.data[root_key].as_mut().unwrap()
+        self.data[root_key].0.as_mut().unwrap()
     }
 }
 
 impl<A: UfValue> FromIterator<A> for QuickFindUf<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> QuickFindUf<A> {
-        let data = iterator.into_iter().map(Some).collect::<Vec<_>>();
+        let data = iterator.into_iter().map(Some).zip(0..).collect::<Vec<_>>();
+        let len = data.len();
         QuickFindUf {
-            parent: (0..data.len()).collect(),
-            data: data
+            parent: (0..len).collect(),
+            data: data,
+            next: (0..len).collect()
         }
     }
 }
