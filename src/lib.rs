@@ -10,15 +10,15 @@ use std::mem;
 use std::default::Default;
 use std::iter::{IntoIterator, FromIterator};
 
-/// The value that can be contained with `UFValue`.
-pub trait UFValue: Sized {
+/// The value that can be contained with `UfValue`.
+pub trait UfValue: Sized {
     /// Merge two value into one.
     ///
     /// This is used by `UnionFind::union` operation.
     fn merge(lval: Self, rval: Self) -> Merge<Self>;
 }
 
-/// Return value of the `UFValue::merege`
+/// Return value of the `UfValue::merege`
 #[allow(missing_docs)]
 pub enum Merge<T> {
     Left(T), Right(T)
@@ -28,7 +28,7 @@ pub enum Merge<T> {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Size(usize);
 
-impl UFValue for Size {
+impl UfValue for Size {
     fn merge(Size(lval): Size, Size(rval): Size) -> Merge<Size> {
         if lval >= rval {
             Merge::Left(Size(lval + rval))
@@ -49,7 +49,7 @@ pub struct UnionFind<V = Size> {
     data: Vec<Option<V>>
 }
 
-impl<T: UFValue = Size> UnionFind<T> {
+impl<T: UfValue = Size> UnionFind<T> {
     /// Creates empty `UnionFind` struct.
     #[inline]
     pub fn new(len: usize) -> UnionFind<T> where T: Default {
@@ -73,7 +73,7 @@ impl<T: UFValue = Size> UnionFind<T> {
         let v0 = mem::replace(&mut self.data[k0], None).unwrap();
         let v1 = mem::replace(&mut self.data[k1], None).unwrap();
 
-        let (parent, child, val) = match UFValue::merge(v0, v1) {
+        let (parent, child, val) = match UfValue::merge(v0, v1) {
             Merge::Left(val) => (k0, k1, val),
             Merge::Right(val) => (k1, k0, val)
         };
@@ -117,7 +117,7 @@ impl<T: UFValue = Size> UnionFind<T> {
     }
 }
 
-impl<A: UFValue> FromIterator<A> for UnionFind<A> {
+impl<A: UfValue> FromIterator<A> for UnionFind<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> UnionFind<A> {
         let data = iterator.into_iter().map(Some).collect::<Vec<_>>();
