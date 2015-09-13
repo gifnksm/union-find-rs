@@ -40,20 +40,15 @@ impl<V: UfValue> UnionFind<V> for QuickUnionUf<V> {
     /// Returns the identifier of the set that the key belongs to.
     #[inline]
     fn find(&mut self, key: usize) -> usize {
-        let p = self.parent[key];
-        if key == p { return key }
-
-        let mut cur_key = p;
-        loop {
-            let p = self.parent[cur_key];
-            if p == cur_key { break }
-
-            self.parent[cur_key] = self.parent[p];
-            cur_key = p;
+        let mut k = key;
+        let mut p = self.parent[k];
+        while p != k {
+            let pp = self.parent[p];
+            self.parent[k] = pp;
+            k = p;
+            p = pp;
         }
-
-        self.parent[key] = cur_key;
-        cur_key
+        k
     }
 
     /// Returns the reference to the value of the set that the key belongs to.
