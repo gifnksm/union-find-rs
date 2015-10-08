@@ -30,6 +30,14 @@ impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
     fn size(&self) -> usize { self.payload.len() }
 
     #[inline]
+    fn insert(&mut self, data: V) -> usize {
+        let key = self.payload.len();
+        self.link_parent.push(key);
+        self.payload.push(Some(data));
+        key
+    }
+
+    #[inline]
     fn union(&mut self, key0: usize, key1: usize) -> bool {
         let k0 = self.find(key0);
         let k1 = self.find(key1);

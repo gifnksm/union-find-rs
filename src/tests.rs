@@ -1,4 +1,5 @@
 use ::{UnionFind, UnionBySize};
+use std::default::Default;
 
 pub fn union_find<T>()
     where T: UnionFind<UnionBySize>
@@ -23,6 +24,10 @@ pub fn union_find<T>()
     assert_eq!(3, uf.get(2).size());
     assert!(uf.find(0) == uf.find(1));
     assert!(uf.find(2) == uf.find(1));
+    let k100 = uf.insert(UnionBySize::default());
+    assert_eq!(k100, 100);
+    uf.union(k100, 0);
+    assert_eq!(4, uf.get(100).size());
 }
 
 mod quick_union {
