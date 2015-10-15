@@ -26,6 +26,10 @@ pub trait UnionFind<V: Union>: FromIterator<V> + Sized {
     /// Returns the size of `self`.
     fn size(&self) -> usize;
 
+    ///Inserts a new key into the union.
+    ///Returns the key of the inserted set
+    fn insert(&mut self, data: V) -> usize;
+
     /// Join two sets that contains given keys (Union operation).
     ///
     /// Returns `true` if these keys are belonged to different sets.
