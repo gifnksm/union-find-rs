@@ -8,7 +8,7 @@ pub trait Union: Sized {
     fn union(lval: Self, rval: Self) -> UnionResult<Self>;
 }
 
-/// Return value of the `Union::merge`
+/// Return value of the `Union::merge`.
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Debug)]
 pub enum UnionResult<T> {
@@ -29,11 +29,12 @@ pub trait UnionFind<V: Union>: FromIterator<V> + Extend<V> + Sized {
     /// Returns the size of `self`.
     fn size(&self) -> usize;
 
-    ///Inserts a new key into the union.
-    ///Returns the key of the inserted set
+    /// Inserts a new set into the union.
+    ///
+    /// Returns the key of the inserted set.
     fn insert(&mut self, data: V) -> usize;
 
-    /// Join two sets that contains given keys (Union operation).
+    /// Join two sets that contains given keys (union operation).
     ///
     /// Returns `true` if these keys are belonged to different sets.
     fn union(&mut self, key0: usize, key1: usize) -> bool;
