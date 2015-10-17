@@ -113,21 +113,35 @@ impl<V: Union> UnionFind<V> for QuickFindUf<V> {
 impl<A: Union> FromIterator<A> for QuickFindUf<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item = A>>(iterator: T) -> QuickFindUf<A> {
-        let payload = iterator.into_iter()
-                              .zip(0..)
+        let mut uf = QuickFindUf {
+            link_root: vec![],
+            link_sibling: vec![],
+            payload: vec![],
+        };
+        uf.extend(iterator);
+        uf
+    }
+}
+
+impl<A> Extend<A> for QuickFindUf<A> {
+    #[inline]
+    fn extend<T>(&mut self, iterable: T)
+        where T: IntoIterator<Item = A>
+    {
+        let len = self.payload.len();
+        let payload = iterable.into_iter()
+                              .zip(len..)
                               .map(|(data, link)| {
                                   Payload {
                                       data: data,
                                       link_last_child: link,
                                   }
                               })
-                              .map(Some)
-                              .collect::<Vec<_>>();
-        let len = payload.len();
-        QuickFindUf {
-            link_root: (0..len).collect(),
-            link_sibling: (0..len).collect(),
-            payload: payload,
-        }
+                              .map(Some);
+        self.payload.extend(payload);
+
+        let new_len = self.payload.len();
+        self.link_root.extend(len..new_len);
+        self.link_sibling.extend(len..new_len);
     }
 }

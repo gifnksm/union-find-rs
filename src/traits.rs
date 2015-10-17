@@ -17,7 +17,7 @@ pub enum UnionResult<T> {
 }
 
 /// APIs for Union-Find operation.
-pub trait UnionFind<V: Union>: FromIterator<V> + Sized {
+pub trait UnionFind<V: Union>: FromIterator<V> + Extend<V> + Sized {
     /// Creates empty `UnionFind` struct.
     #[inline]
     fn new(len: usize) -> Self

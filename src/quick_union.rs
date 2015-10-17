@@ -90,10 +90,25 @@ impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
 impl<A: Union> FromIterator<A> for QuickUnionUf<A> {
     #[inline]
     fn from_iter<T: IntoIterator<Item = A>>(iterator: T) -> QuickUnionUf<A> {
-        let payload = iterator.into_iter().map(Some).collect::<Vec<_>>();
-        QuickUnionUf {
-            link_parent: (0..payload.len()).collect(),
-            payload: payload,
-        }
+        let mut uf = QuickUnionUf {
+            link_parent: vec![],
+            payload: vec![],
+        };
+        uf.extend(iterator);
+        uf
+    }
+}
+
+impl<A> Extend<A> for QuickUnionUf<A> {
+    #[inline]
+    fn extend<T>(&mut self, iterable: T)
+        where T: IntoIterator<Item = A>
+    {
+        let len = self.payload.len();
+        let payload = iterable.into_iter().map(Some);
+        self.payload.extend(payload);
+
+        let new_len = self.payload.len();
+        self.link_parent.extend(len..new_len);
     }
 }
