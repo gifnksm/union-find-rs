@@ -12,14 +12,17 @@ pub trait Union: Sized {
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Debug)]
 pub enum UnionResult<T> {
-    Left(T), Right(T)
+    Left(T),
+    Right(T),
 }
 
 /// APIs for Union-Find operation.
 pub trait UnionFind<V: Union>: FromIterator<V> + Sized {
     /// Creates empty `UnionFind` struct.
     #[inline]
-    fn new(len: usize) -> Self where V: Default {
+    fn new(len: usize) -> Self
+        where V: Default
+    {
         Self::from_iter((0..len).map(|_| Default::default()))
     }
 

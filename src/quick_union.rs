@@ -6,7 +6,7 @@ use {Union, UnionFind, UnionResult};
 #[derive(Debug)]
 pub struct QuickUnionUf<V> {
     link_parent: Vec<usize>,
-    payload: Vec<Option<V>>
+    payload: Vec<Option<V>>,
 }
 
 impl<V: Clone> Clone for QuickUnionUf<V> {
@@ -14,7 +14,7 @@ impl<V: Clone> Clone for QuickUnionUf<V> {
     fn clone(&self) -> QuickUnionUf<V> {
         QuickUnionUf {
             link_parent: self.link_parent.clone(),
-            payload: self.payload.clone()
+            payload: self.payload.clone(),
         }
     }
 
@@ -27,7 +27,9 @@ impl<V: Clone> Clone for QuickUnionUf<V> {
 
 impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
     #[inline]
-    fn size(&self) -> usize { self.payload.len() }
+    fn size(&self) -> usize {
+        self.payload.len()
+    }
 
     #[inline]
     fn insert(&mut self, data: V) -> usize {
@@ -41,7 +43,9 @@ impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
     fn union(&mut self, key0: usize, key1: usize) -> bool {
         let k0 = self.find(key0);
         let k1 = self.find(key1);
-        if k0 == k1 { return false; }
+        if k0 == k1 {
+            return false;
+        }
 
         // Temporary replace with dummy to move out the elements of the vector.
         let v0 = mem::replace(&mut self.payload[k0], None).unwrap();
@@ -49,7 +53,7 @@ impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
 
         let (parent, child, val) = match Union::union(v0, v1) {
             UnionResult::Left(val) => (k0, k1, val),
-            UnionResult::Right(val) => (k1, k0, val)
+            UnionResult::Right(val) => (k1, k0, val),
         };
         self.payload[parent] = Some(val);
         self.link_parent[child] = parent;
@@ -85,11 +89,11 @@ impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
 
 impl<A: Union> FromIterator<A> for QuickUnionUf<A> {
     #[inline]
-    fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> QuickUnionUf<A> {
+    fn from_iter<T: IntoIterator<Item = A>>(iterator: T) -> QuickUnionUf<A> {
         let payload = iterator.into_iter().map(Some).collect::<Vec<_>>();
         QuickUnionUf {
             link_parent: (0..payload.len()).collect(),
-            payload: payload
+            payload: payload,
         }
     }
 }

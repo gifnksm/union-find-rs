@@ -23,7 +23,9 @@ impl Union for UnionBySize {
 
 impl Default for UnionBySize {
     #[inline]
-    fn default() -> UnionBySize { UnionBySize(1) }
+    fn default() -> UnionBySize {
+        UnionBySize(1)
+    }
 }
 
 impl UnionBySize {
@@ -51,14 +53,16 @@ impl Union for UnionByRank {
         match lrank.cmp(&rrank) {
             Ordering::Less => UnionResult::Right(right),
             Ordering::Greater => UnionResult::Left(left),
-            Ordering::Equal => UnionResult::Left(UnionByRank(lrank + 1))
+            Ordering::Equal => UnionResult::Left(UnionByRank(lrank + 1)),
         }
     }
 }
 
 impl Default for UnionByRank {
     #[inline]
-    fn default() -> UnionByRank { UnionByRank(0) }
+    fn default() -> UnionByRank {
+        UnionByRank(0)
+    }
 }
 
 impl UnionByRank {
@@ -90,7 +94,7 @@ impl Union for UnionBySizeRank {
         let new_rank = match rank_cmp {
             Ordering::Less => rrank,
             Ordering::Greater => lrank,
-            Ordering::Equal => lrank + 1
+            Ordering::Equal => lrank + 1,
         };
 
         let result = UnionBySizeRank(new_size, new_rank);
@@ -100,7 +104,7 @@ impl Union for UnionBySizeRank {
             Ordering::Equal => {
                 match rank_cmp {
                     Ordering::Less => UnionResult::Right(result),
-                    _ => UnionResult::Left(result)
+                    _ => UnionResult::Left(result),
                 }
             }
         }
@@ -109,7 +113,9 @@ impl Union for UnionBySizeRank {
 
 impl Default for UnionBySizeRank {
     #[inline]
-    fn default() -> UnionBySizeRank { UnionBySizeRank(1, 0) }
+    fn default() -> UnionBySizeRank {
+        UnionBySizeRank(1, 0)
+    }
 }
 
 impl UnionBySizeRank {
@@ -148,7 +154,7 @@ impl Union for UnionByRankSize {
         let new_rank = match rank_cmp {
             Ordering::Less => rrank,
             Ordering::Greater => lrank,
-            Ordering::Equal => lrank + 1
+            Ordering::Equal => lrank + 1,
         };
 
         let result = UnionByRankSize(new_rank, new_size);
@@ -158,7 +164,7 @@ impl Union for UnionByRankSize {
             Ordering::Equal => {
                 match lsize.cmp(&rsize) {
                     Ordering::Less => UnionResult::Right(result),
-                    _ => UnionResult::Left(result)
+                    _ => UnionResult::Left(result),
                 }
             }
         }
@@ -167,7 +173,9 @@ impl Union for UnionByRankSize {
 
 impl Default for UnionByRankSize {
     #[inline]
-    fn default() -> UnionByRankSize { UnionByRankSize(1, 0) }
+    fn default() -> UnionByRankSize {
+        UnionByRankSize(1, 0)
+    }
 }
 
 impl UnionByRankSize {

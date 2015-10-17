@@ -1,4 +1,4 @@
-use ::{UnionFind, UnionBySize};
+use {UnionFind, UnionBySize};
 use std::default::Default;
 
 pub fn union_find<T>()

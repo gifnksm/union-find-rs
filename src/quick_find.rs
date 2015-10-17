@@ -5,7 +5,7 @@ use {Union, UnionFind, UnionResult};
 #[derive(Copy, Clone, Debug)]
 struct Payload<V> {
     data: V,
-    link_last_child: usize
+    link_last_child: usize,
 }
 
 /// Union-Find implementation with quick find operation.
@@ -13,7 +13,7 @@ struct Payload<V> {
 pub struct QuickFindUf<V> {
     link_root: Vec<usize>,
     link_sibling: Vec<usize>,
-    payload: Vec<Option<Payload<V>>>
+    payload: Vec<Option<Payload<V>>>,
 }
 
 impl<V> Clone for QuickFindUf<V>
@@ -24,7 +24,7 @@ impl<V> Clone for QuickFindUf<V>
         QuickFindUf {
             link_root: self.link_root.clone(),
             link_sibling: self.link_sibling.clone(),
-            payload: self.payload.clone()
+            payload: self.payload.clone(),
         }
     }
 
@@ -38,14 +38,19 @@ impl<V> Clone for QuickFindUf<V>
 
 impl<V: Union> UnionFind<V> for QuickFindUf<V> {
     #[inline]
-    fn size(&self) -> usize { self.payload.len() }
+    fn size(&self) -> usize {
+        self.payload.len()
+    }
 
     #[inline]
     fn insert(&mut self, data: V) -> usize {
         let key = self.payload.len();
         self.link_root.push(key);
         self.link_sibling.push(key);
-        self.payload.push(Some(Payload { data: data, link_last_child: key }));
+        self.payload.push(Some(Payload {
+            data: data,
+            link_last_child: key,
+        }));
         key
     }
 
@@ -53,17 +58,19 @@ impl<V: Union> UnionFind<V> for QuickFindUf<V> {
     fn union(&mut self, key0: usize, key1: usize) -> bool {
         let k0 = self.find(key0);
         let k1 = self.find(key1);
-        if k0 == k1 { return false; }
+        if k0 == k1 {
+            return false;
+        }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let Payload { data: d0, link_last_child: c0 } =
-            mem::replace(&mut self.payload[k0], None).unwrap();
-        let Payload { data: d1, link_last_child: c1 } =
-            mem::replace(&mut self.payload[k1], None).unwrap();
+        let Payload { data: d0, link_last_child: c0 } = mem::replace(&mut self.payload[k0], None)
+                                                            .unwrap();
+        let Payload { data: d1, link_last_child: c1 } = mem::replace(&mut self.payload[k1], None)
+                                                            .unwrap();
 
         let (root, child_root, val, last) = match Union::union(d0, d1) {
             UnionResult::Left(val) => (k0, k1, val, c0),
-            UnionResult::Right(val) => (k1, k0, val, c1)
+            UnionResult::Right(val) => (k1, k0, val, c1),
         };
 
         self.link_sibling[last] = child_root;
@@ -79,14 +86,16 @@ impl<V: Union> UnionFind<V> for QuickFindUf<V> {
 
         self.payload[root] = Some(Payload {
             data: val,
-            link_last_child: elem
+            link_last_child: elem,
         });
 
         true
     }
 
     #[inline]
-    fn find(&mut self, key: usize) -> usize { self.link_root[key] }
+    fn find(&mut self, key: usize) -> usize {
+        self.link_root[key]
+    }
 
     #[inline]
     fn get(&mut self, key: usize) -> &V {
@@ -103,18 +112,22 @@ impl<V: Union> UnionFind<V> for QuickFindUf<V> {
 
 impl<A: Union> FromIterator<A> for QuickFindUf<A> {
     #[inline]
-    fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> QuickFindUf<A> {
-        let payload = iterator
-            .into_iter()
-            .zip(0..)
-            .map(|(data, link)| Payload { data: data, link_last_child: link })
-            .map(Some)
-            .collect::<Vec<_>>();
+    fn from_iter<T: IntoIterator<Item = A>>(iterator: T) -> QuickFindUf<A> {
+        let payload = iterator.into_iter()
+                              .zip(0..)
+                              .map(|(data, link)| {
+                                  Payload {
+                                      data: data,
+                                      link_last_child: link,
+                                  }
+                              })
+                              .map(Some)
+                              .collect::<Vec<_>>();
         let len = payload.len();
         QuickFindUf {
             link_root: (0..len).collect(),
             link_sibling: (0..len).collect(),
-            payload: payload
+            payload: payload,
         }
     }
 }
