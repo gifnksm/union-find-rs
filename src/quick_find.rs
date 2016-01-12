@@ -16,8 +16,7 @@ pub struct QuickFindUf<V> {
     payload: Vec<Option<Payload<V>>>,
 }
 
-impl<V> Clone for QuickFindUf<V>
-    where V: Clone + Union
+impl<V> Clone for QuickFindUf<V> where V: Clone + Union
 {
     #[inline]
     fn clone(&self) -> QuickFindUf<V> {
