@@ -3,7 +3,7 @@
 name = "union-find"
 version = "0.3.0"
 authors = ["gifnksm <makoto.nksm+github@gmail.com>"]
-license = "MIT"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/gifnksm/union-find-rs"
 description = "Struct and methods for union-find operation."
