@@ -14,4 +14,4 @@ exclude = ["etc/*"]
 nightly = []
 
 [dev-dependencies]
-lazy_static = "0.1"
+lazy_static = "0.2"

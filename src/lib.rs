@@ -22,7 +22,6 @@
 
 #[cfg(all(test, feature = "nightly"))]
 #[macro_use]
-#[no_link]
 extern crate lazy_static;
 
 mod traits;
