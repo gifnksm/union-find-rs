@@ -5,11 +5,12 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-use {UnionFind, UnionBySize};
+use {UnionBySize, UnionFind};
 use std::default::Default;
 
 pub fn union_find<T>()
-    where T: UnionFind<UnionBySize>
+where
+    T: UnionFind<UnionBySize>,
 {
     let mut uf = T::new(100);
     assert_eq!(1, uf.get(0).size());
@@ -33,7 +34,7 @@ pub fn union_find<T>()
     assert!(uf.find(2) == uf.find(1));
     let k100 = uf.insert(UnionBySize::default());
     assert_eq!(k100, 100);
-    uf.union(k100, 0);
+    let _ = uf.union(k100, 0);
     assert_eq!(4, uf.get(100).size());
 }
 

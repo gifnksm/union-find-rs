@@ -28,7 +28,8 @@ pub trait UnionFind<V: Union>: FromIterator<V> + Extend<V> + Sized {
     /// Creates empty `UnionFind` struct.
     #[inline]
     fn new(len: usize) -> Self
-        where V: Default
+    where
+        V: Default,
     {
         Self::from_iter((0..len).map(|_| Default::default()))
     }

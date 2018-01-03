@@ -109,7 +109,8 @@ impl<A: Union> FromIterator<A> for QuickUnionUf<A> {
 impl<A> Extend<A> for QuickUnionUf<A> {
     #[inline]
     fn extend<T>(&mut self, iterable: T)
-        where T: IntoIterator<Item = A>
+    where
+        T: IntoIterator<Item = A>,
     {
         let len = self.payload.len();
         let payload = iterable.into_iter().map(Some);
