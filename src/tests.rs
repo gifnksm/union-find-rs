@@ -33,7 +33,7 @@ pub fn union_find<T>()
     assert!(uf.find(2) == uf.find(1));
     let k100 = uf.insert(UnionBySize::default());
     assert_eq!(k100, 100);
-    uf.union(k100, 0);
+    let _ = uf.union(k100, 0);
     assert_eq!(4, uf.get(100).size());
 }
 
