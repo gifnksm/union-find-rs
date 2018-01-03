@@ -108,12 +108,10 @@ impl Union for UnionBySizeRank {
         match lsize.cmp(&rsize) {
             Ordering::Less => UnionResult::Right(result),
             Ordering::Greater => UnionResult::Left(result),
-            Ordering::Equal => {
-                match rank_cmp {
-                    Ordering::Less => UnionResult::Right(result),
-                    _ => UnionResult::Left(result),
-                }
-            }
+            Ordering::Equal => match rank_cmp {
+                Ordering::Less => UnionResult::Right(result),
+                _ => UnionResult::Left(result),
+            },
         }
     }
 }
@@ -168,12 +166,10 @@ impl Union for UnionByRankSize {
         match rank_cmp {
             Ordering::Less => UnionResult::Right(result),
             Ordering::Greater => UnionResult::Left(result),
-            Ordering::Equal => {
-                match lsize.cmp(&rsize) {
-                    Ordering::Less => UnionResult::Right(result),
-                    _ => UnionResult::Left(result),
-                }
-            }
+            Ordering::Equal => match lsize.cmp(&rsize) {
+                Ordering::Less => UnionResult::Right(result),
+                _ => UnionResult::Left(result),
+            },
         }
     }
 }

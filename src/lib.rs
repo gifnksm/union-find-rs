@@ -16,7 +16,6 @@
 #![warn(unused_import_braces)]
 #![warn(unused_qualifications)]
 #![warn(unused_results)]
-
 #![cfg_attr(all(test, feature = "nightly"), feature(test))]
 #![cfg_attr(all(test, feature = "nightly"), feature(const_fn))]
 
@@ -28,7 +27,7 @@ mod traits;
 pub use traits::{Union, UnionFind, UnionResult};
 
 mod union;
-pub use union::{UnionBySize, UnionByRank, UnionBySizeRank, UnionByRankSize};
+pub use union::{UnionByRank, UnionByRankSize, UnionBySize, UnionBySizeRank};
 
 mod quick_union;
 pub use quick_union::QuickUnionUf;

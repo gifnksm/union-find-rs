@@ -23,7 +23,9 @@ pub struct QuickFindUf<V> {
     payload: Vec<Option<Payload<V>>>,
 }
 
-impl<V> Clone for QuickFindUf<V> where V: Clone + Union
+impl<V> Clone for QuickFindUf<V>
+where
+    V: Clone + Union,
 {
     #[inline]
     fn clone(&self) -> QuickFindUf<V> {
@@ -69,10 +71,14 @@ impl<V: Union> UnionFind<V> for QuickFindUf<V> {
         }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let Payload { data: d0, link_last_child: c0 } = mem::replace(&mut self.payload[k0], None)
-                                                            .unwrap();
-        let Payload { data: d1, link_last_child: c1 } = mem::replace(&mut self.payload[k1], None)
-                                                            .unwrap();
+        let Payload {
+            data: d0,
+            link_last_child: c0,
+        } = mem::replace(&mut self.payload[k0], None).unwrap();
+        let Payload {
+            data: d1,
+            link_last_child: c1,
+        } = mem::replace(&mut self.payload[k1], None).unwrap();
 
         let (root, child_root, val, last) = match Union::union(d0, d1) {
             UnionResult::Left(val) => (k0, k1, val, c0),
@@ -132,18 +138,20 @@ impl<A: Union> FromIterator<A> for QuickFindUf<A> {
 impl<A> Extend<A> for QuickFindUf<A> {
     #[inline]
     fn extend<T>(&mut self, iterable: T)
-        where T: IntoIterator<Item = A>
+    where
+        T: IntoIterator<Item = A>,
     {
         let len = self.payload.len();
-        let payload = iterable.into_iter()
-                              .zip(len..)
-                              .map(|(data, link)| {
-                                  Payload {
-                                      data: data,
-                                      link_last_child: link,
-                                  }
-                              })
-                              .map(Some);
+        let payload = iterable
+            .into_iter()
+            .zip(len..)
+            .map(|(data, link)| {
+                Payload {
+                    data: data,
+                    link_last_child: link,
+                }
+            })
+            .map(Some);
         self.payload.extend(payload);
 
         let new_len = self.payload.len();
