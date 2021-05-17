@@ -17,7 +17,6 @@
 #![warn(unused_qualifications)]
 #![warn(unused_results)]
 #![cfg_attr(all(test, feature = "nightly"), feature(test))]
-#![cfg_attr(all(test, feature = "nightly"), feature(const_fn))]
 
 #[cfg(all(test, feature = "nightly"))]
 #[macro_use]
