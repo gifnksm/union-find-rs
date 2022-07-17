@@ -14,7 +14,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-union-find = "0.3"
+union-find = "0.4"
 ```
 
 ## License
