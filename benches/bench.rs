@@ -274,40 +274,49 @@ impl Input {
             })
         });
     }
-}
 
-fn bench_for_type<T, V>(c: &mut Criterion, category: &str, inputs: &[Input])
-where
-    T: UnionFind<V> + Clone,
-    V: Union + Default,
-{
-    for input in inputs {
-        let mut cache = Cache::<T>::new(input);
-        input.bench_clone_from(c, category, &mut cache);
-        input.bench_union1(c, category, &mut cache);
-        input.bench_union2(c, category, &mut cache);
-        input.bench_union3(c, category, &mut cache);
-        input.bench_find1(c, category, &mut cache);
-        input.bench_find2(c, category, &mut cache);
-        input.bench_find3(c, category, &mut cache);
+    fn bench_union<T, V>(&self, c: &mut Criterion, category: &str)
+    where
+        T: UnionFind<V> + Clone,
+        V: Union + Default,
+    {
+        let mut cache = Cache::<T>::new(self);
+        self.bench_union1(c, category, &mut cache);
+    }
+
+    fn bench_full<T, V>(&self, c: &mut Criterion, category: &str)
+    where
+        T: UnionFind<V> + Clone,
+        V: Union + Default,
+    {
+        let mut cache = Cache::<T>::new(self);
+        self.bench_clone_from(c, category, &mut cache);
+        self.bench_union1(c, category, &mut cache);
+        self.bench_union2(c, category, &mut cache);
+        self.bench_union3(c, category, &mut cache);
+        self.bench_find1(c, category, &mut cache);
+        self.bench_find2(c, category, &mut cache);
+        self.bench_find3(c, category, &mut cache);
     }
 }
 
 fn bench(c: &mut Criterion) {
-    let inputs = &[
-        Input::from_file("tiny", "etc/tinyUF.txt"),
-        Input::from_file("medium", "etc/mediumUF.txt"),
-        Input::from_file("large", "etc/largeUF.txt"),
-    ];
+    let tiny = Input::from_file("tiny", "etc/tinyUF.txt");
+    let medium = Input::from_file("medium", "etc/mediumUF.txt");
+    let large = Input::from_file("large", "etc/largeUF.txt");
 
-    bench_for_type::<QuickUnionUf<UnionBySize>, _>(c, "quick_union::by_size", inputs);
-    bench_for_type::<QuickUnionUf<UnionByRank>, _>(c, "quick_union::by_rank", inputs);
-    bench_for_type::<QuickUnionUf<UnionBySizeRank>, _>(c, "quick_union::by_size_rank", inputs);
-    bench_for_type::<QuickUnionUf<UnionByRankSize>, _>(c, "quick_union::by_rank_size", inputs);
-    bench_for_type::<QuickFindUf<UnionBySize>, _>(c, "quick_find::by_size", inputs);
-    bench_for_type::<QuickFindUf<UnionByRank>, _>(c, "quick_find::by_rank", inputs);
-    bench_for_type::<QuickFindUf<UnionBySizeRank>, _>(c, "quick_find::by_size_rank", inputs);
-    bench_for_type::<QuickFindUf<UnionByRankSize>, _>(c, "quick_find::by_rank_size", inputs);
+    for input in &[&tiny, &medium, &large] {
+        input.bench_full::<QuickUnionUf<UnionBySize>, _>(c, "quick_union");
+        input.bench_full::<QuickFindUf<UnionBySize>, _>(c, "quick_find");
+    }
+
+    {
+        let input = &tiny;
+        input.bench_union::<QuickUnionUf<UnionBySize>, _>(c, "by_size");
+        input.bench_union::<QuickUnionUf<UnionByRank>, _>(c, "by_rank");
+        input.bench_union::<QuickUnionUf<UnionBySizeRank>, _>(c, "by_size_rank");
+        input.bench_union::<QuickUnionUf<UnionByRankSize>, _>(c, "by_rank_size");
+    }
 }
 
 criterion_group!(benches, bench);
