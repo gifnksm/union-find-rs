@@ -5,21 +5,27 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-extern crate test;
+extern crate criterion;
+extern crate lazy_static;
+extern crate union_find;
 
-use std::io::{BufRead, BufReader};
+use criterion::{criterion_group, criterion_main, Criterion};
+use lazy_static::lazy_static;
 use std::fs::File;
-use {Union, UnionFind};
-use self::test::Bencher;
+use std::io::{BufRead, BufReader};
+use union_find::{
+    QuickFindUf, QuickUnionUf, Union, UnionByRank, UnionByRankSize, UnionBySize, UnionBySizeRank,
+    UnionFind,
+};
 
 lazy_static! {
-    static ref TINY: Input = Input::from_file("etc/tinyUF.txt");
-    static ref MEDIUM: Input = Input::from_file("etc/mediumUF.txt");
-    static ref LARGE: Input = Input::from_file("etc/largeUF.txt");
+    static ref TINY: Input = Input::from_file("tiny", "etc/tinyUF.txt");
+    static ref MEDIUM: Input = Input::from_file("medium", "etc/mediumUF.txt");
+    static ref LARGE: Input = Input::from_file("large", "etc/largeUF.txt");
 }
 
-struct Cache<T> {
-    input: &'static Input,
+struct Cache<'a, T> {
+    input: &'a Input,
     init: Option<T>,
     union1: Option<T>,
     union2: Option<T>,
@@ -27,8 +33,8 @@ struct Cache<T> {
     find2: Option<T>,
 }
 
-impl<T> Cache<T> {
-    fn new(input: &'static Input) -> Cache<T> {
+impl<'a, T> Cache<'a, T> {
+    fn new(input: &'a Input) -> Cache<'a, T> {
         Cache {
             input: input,
             init: None,
@@ -105,13 +111,14 @@ impl<T> Cache<T> {
 
 #[derive(Clone, Debug)]
 struct Input {
+    name: &'static str,
     size: usize,
     conn: Vec<(usize, usize)>,
 }
 
 impl Input {
-    fn from_file(name: &str) -> Input {
-        let mut reader = BufReader::new(File::open(name).unwrap());
+    fn from_file(name: &'static str, file_name: &str) -> Input {
+        let mut reader = BufReader::new(File::open(file_name).unwrap());
         let mut buf = String::new();
 
         let _ = reader.read_line(&mut buf).unwrap();
@@ -132,6 +139,7 @@ impl Input {
         }
 
         Input {
+            name: name,
             size: size,
             conn: conn,
         }
@@ -164,166 +172,147 @@ impl Input {
         }
     }
 
-    fn bench_clone_from<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+    fn bench_clone_from<T, V>(&self, c: &mut Criterion, category: &str, cache: &mut Cache<T>)
     where
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
+        let id = format!("{}::{}::{}", category, self.name, "clone_from");
         let base = cache.init();
         let mut uf = base.clone();
-        bencher.iter(|| {
-            uf.clone_from(&base);
+        c.bench_function(&id, |b| {
+            b.iter(|| {
+                uf.clone_from(&base);
+            })
         });
     }
-    fn bench_union1<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+
+    fn bench_union1<T, V>(&self, c: &mut Criterion, category: &str, cache: &mut Cache<T>)
     where
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
+        let id = format!("{}::{}::{}", category, self.name, "union1");
         let base = cache.init();
         let mut uf = base.clone();
-        bencher.iter(|| {
-            uf.clone_from(&base);
-            self.union(&mut uf);
+        c.bench_function(&id, |b| {
+            b.iter(|| {
+                uf.clone_from(&base);
+                self.union(&mut uf);
+            })
         });
     }
-    fn bench_union2<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+    fn bench_union2<T, V>(&self, c: &mut Criterion, category: &str, cache: &mut Cache<T>)
     where
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
+        let id = format!("{}::{}::{}", category, self.name, "union2");
         let base = cache.union1();
         let mut uf = base.clone();
-        bencher.iter(|| {
-            uf.clone_from(&base);
-            self.union(&mut uf);
+        c.bench_function(&id, |b| {
+            b.iter(|| {
+                uf.clone_from(&base);
+                self.union(&mut uf);
+            })
         });
     }
-    fn bench_union3<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+    fn bench_union3<T, V>(&self, c: &mut Criterion, category: &str, cache: &mut Cache<T>)
     where
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
+        let id = format!("{}::{}::{}", category, self.name, "union3");
         let base = cache.union2();
         let mut uf = base.clone();
-        bencher.iter(|| {
-            uf.clone_from(&base);
-            self.union(&mut uf);
+        c.bench_function(&id, |b| {
+            b.iter(|| {
+                uf.clone_from(&base);
+                self.union(&mut uf);
+            })
         });
     }
 
-    fn bench_find1<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+    fn bench_find1<T, V>(&self, c: &mut Criterion, category: &str, cache: &mut Cache<T>)
     where
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
+        let id = format!("{}::{}::{}", category, self.name, "find1");
         let base = cache.union1();
         let mut uf = base.clone();
-        bencher.iter(|| {
-            uf.clone_from(&base);
-            self.find_all(&mut uf);
+        c.bench_function(&id, |b| {
+            b.iter(|| {
+                uf.clone_from(&base);
+                self.find_all(&mut uf);
+            })
         });
     }
-    fn bench_find2<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+    fn bench_find2<T, V>(&self, c: &mut Criterion, category: &str, cache: &mut Cache<T>)
     where
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
+        let id = format!("{}::{}::{}", category, self.name, "find2");
         let base = cache.find1();
         let mut uf = base.clone();
-        bencher.iter(|| {
-            uf.clone_from(&base);
-            self.find_all(&mut uf);
+        c.bench_function(&id, |b| {
+            b.iter(|| {
+                uf.clone_from(&base);
+                self.find_all(&mut uf);
+            })
         });
     }
-    fn bench_find3<T, V>(&self, bencher: &mut Bencher, cache: &mut Cache<T>)
+    fn bench_find3<T, V>(&self, c: &mut Criterion, category: &str, cache: &mut Cache<T>)
     where
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
+        let id = format!("{}::{}::{}", category, self.name, "find3");
         let base = cache.find2();
         let mut uf = base.clone();
-        bencher.iter(|| {
-            uf.clone_from(&base);
-            self.find_all(&mut uf);
+        c.bench_function(&id, |b| {
+            b.iter(|| {
+                uf.clone_from(&base);
+                self.find_all(&mut uf);
+            })
         });
     }
 }
 
-macro_rules! bench_fns_for_type_with_input {
-    ($ty:ty, $input:path) => {
-        use std::sync::Mutex;
-        use ::bench::Cache;
-
-        lazy_static!{
-            static ref CACHE: Mutex<Cache<$ty>> = Mutex::new(Cache::new(&$input));
-        }
-
-        #[bench]
-        fn clone_from(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_clone_from::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
-        }
-        #[bench]
-        fn union1(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_union1::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
-        }
-        #[bench]
-        fn union2(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_union2::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
-        }
-        #[bench]
-        fn union3(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_union3::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
-        }
-        #[bench]
-        fn find1(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_find1::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
-        }
-        #[bench]
-        fn find2(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_find2::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
-        }
-        #[bench]
-        fn find3(bencher: &mut ::bench::test::Bencher) {
-            $input.bench_find3::<$ty, _>(bencher, &mut CACHE.lock().unwrap());
-        }
+fn bench_for_type<T, V>(c: &mut Criterion, category: &str, inputs: &[Input])
+where
+    T: UnionFind<V> + Clone,
+    V: Union + Default,
+{
+    for input in inputs {
+        let mut cache = Cache::<T>::new(input);
+        input.bench_clone_from(c, category, &mut cache);
+        input.bench_union1(c, category, &mut cache);
+        input.bench_union2(c, category, &mut cache);
+        input.bench_union3(c, category, &mut cache);
+        input.bench_find1(c, category, &mut cache);
+        input.bench_find2(c, category, &mut cache);
+        input.bench_find3(c, category, &mut cache);
     }
 }
 
-macro_rules! bench_fns_for_type {
-    ($ty:ty) => {
-        mod tiny { bench_fns_for_type_with_input!($ty, ::bench::TINY); }
-        mod medium { bench_fns_for_type_with_input!($ty, ::bench::MEDIUM); }
-        mod large { bench_fns_for_type_with_input!($ty, ::bench::LARGE); }
-    }
+fn bench(c: &mut Criterion) {
+    let inputs = &[
+        Input::from_file("tiny", "etc/tinyUF.txt"),
+        Input::from_file("medium", "etc/mediumUF.txt"),
+        Input::from_file("large", "etc/largeUF.txt"),
+    ];
+
+    bench_for_type::<QuickUnionUf<UnionBySize>, _>(c, "quick_union::by_size", inputs);
+    bench_for_type::<QuickUnionUf<UnionByRank>, _>(c, "quick_union::by_rank", inputs);
+    bench_for_type::<QuickUnionUf<UnionBySizeRank>, _>(c, "quick_union::by_size_rank", inputs);
+    bench_for_type::<QuickUnionUf<UnionByRankSize>, _>(c, "quick_union::by_rank_size", inputs);
+    bench_for_type::<QuickFindUf<UnionBySize>, _>(c, "quick_find::by_size", inputs);
+    bench_for_type::<QuickFindUf<UnionByRank>, _>(c, "quick_find::by_rank", inputs);
+    bench_for_type::<QuickFindUf<UnionBySizeRank>, _>(c, "quick_find::by_size_rank", inputs);
+    bench_for_type::<QuickFindUf<UnionByRankSize>, _>(c, "quick_find::by_rank_size", inputs);
 }
 
-mod quick_union {
-    mod by_size {
-        bench_fns_for_type!(::QuickUnionUf<::UnionBySize>);
-    }
-    mod by_rank {
-        bench_fns_for_type!(::QuickUnionUf<::UnionByRank>);
-    }
-    mod by_size_rank {
-        bench_fns_for_type!(::QuickUnionUf<::UnionBySizeRank>);
-    }
-    mod by_rank_size {
-        bench_fns_for_type!(::QuickUnionUf<::UnionByRankSize>);
-    }
-}
-
-mod quick_find {
-    mod by_size {
-        bench_fns_for_type!(::QuickFindUf<::UnionBySize>);
-    }
-    mod by_rank {
-        bench_fns_for_type!(::QuickFindUf<::UnionByRank>);
-    }
-    mod by_size_rank {
-        bench_fns_for_type!(::QuickFindUf<::UnionBySizeRank>);
-    }
-    mod by_rank_size {
-        bench_fns_for_type!(::QuickFindUf<::UnionByRankSize>);
-    }
-}
+criterion_group!(benches, bench);
+criterion_main!(benches);
