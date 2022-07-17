@@ -1,11 +1,12 @@
 # union-find-rs
-[![Build Status](https://travis-ci.org/gifnksm/union-find-rs.svg)](https://travis-ci.org/gifnksm/union-find-rs)
-[![Coverage Status](https://coveralls.io/repos/gifnksm/union-find-rs/badge.svg?branch=master&service=github)](https://coveralls.io/github/gifnksm/union-find-rs?branch=master)
-[![crates.io](http://meritbadge.herokuapp.com/union-find)](https://crates.io/crates/union-find)
+
+[![Rust CI](https://github.com/gifnksm/union-find-rs/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/gifnksm/union-find-rs/actions/workflows/rust-ci.yml)
+[![codecov](https://codecov.io/gh/gifnksm/union-find-rs/branch/master/graph/badge.svg?token=fKfEmEaMjc)](https://codecov.io/gh/gifnksm/union-find-rs)
+[![crates.io](https://img.shields.io/crates/v/union-find.svg)](https://crates.io/crates/union-find)
 
 Struct and methods for union-find operation.
 
-[Documentation](http://gifnksm.github.io/union-find-rs)
+[Documentation](https://docs.rs/union-find)
 
 ## How to use?
 
@@ -13,21 +14,15 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-union-find = "*"
-```
-
-and this to your crate root:
-
-```rust
-extern crate union_find;
+union-find = "0.3"
 ```
 
 ## License
 
 Licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+* MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 
