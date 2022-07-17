@@ -5,10 +5,6 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-extern crate criterion;
-extern crate lazy_static;
-extern crate union_find;
-
 use criterion::{criterion_group, criterion_main, Criterion};
 use lazy_static::lazy_static;
 use std::fs::File;

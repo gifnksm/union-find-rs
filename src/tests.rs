@@ -5,8 +5,8 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+use crate::{UnionBySize, UnionFind};
 use std::default::Default;
-use {UnionBySize, UnionFind};
 
 pub fn union_find<T>()
 where
@@ -41,12 +41,12 @@ where
 mod quick_union {
     #[test]
     fn union_find() {
-        super::union_find::<::QuickUnionUf<::UnionBySize>>();
+        super::union_find::<crate::QuickUnionUf<crate::UnionBySize>>();
     }
 }
 mod quick_find {
     #[test]
     fn union_find() {
-        super::union_find::<::QuickFindUf<::UnionBySize>>();
+        super::union_find::<crate::QuickFindUf<crate::UnionBySize>>();
     }
 }
