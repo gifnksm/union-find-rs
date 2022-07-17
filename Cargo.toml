@@ -2,6 +2,8 @@
 
 name = "union-find"
 version = "0.3.3"
+edition = "2021"
+rust-version = "1.56.1"
 authors = ["gifnksm <makoto.nksm+github@gmail.com>"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -16,4 +18,3 @@ harness = false
 
 [dev-dependencies]
 criterion = "0.3.6"
-lazy_static = "1.0"

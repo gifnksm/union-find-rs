@@ -22,15 +22,15 @@
 extern crate lazy_static;
 
 mod traits;
-pub use traits::{Union, UnionFind, UnionResult};
+pub use crate::traits::{Union, UnionFind, UnionResult};
 
 mod union;
-pub use union::{UnionByRank, UnionByRankSize, UnionBySize, UnionBySizeRank};
+pub use crate::union::{UnionByRank, UnionByRankSize, UnionBySize, UnionBySizeRank};
 
 mod quick_union;
-pub use quick_union::QuickUnionUf;
+pub use crate::quick_union::QuickUnionUf;
 mod quick_find;
-pub use quick_find::QuickFindUf;
+pub use crate::quick_find::QuickFindUf;
 
 #[cfg(test)]
 mod tests;

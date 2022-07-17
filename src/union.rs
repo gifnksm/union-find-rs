@@ -5,8 +5,8 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+use crate::{Union, UnionResult};
 use std::cmp::Ordering;
-use {Union, UnionResult};
 
 /// Operates the `union` with using the size of the sets as weight.
 ///
