@@ -56,7 +56,7 @@ impl<V: Union> UnionFind<V> for QuickFindUf<V> {
         self.link_root.push(key);
         self.link_sibling.push(key);
         self.payload.push(Some(Payload {
-            data: data,
+            data,
             link_last_child: key,
         }));
         key
@@ -146,7 +146,7 @@ impl<A> Extend<A> for QuickFindUf<A> {
             .into_iter()
             .zip(len..)
             .map(|(data, link)| Payload {
-                data: data,
+                data,
                 link_last_child: link,
             })
             .map(Some);
