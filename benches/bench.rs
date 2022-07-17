@@ -36,7 +36,7 @@ struct Cache<'a, T> {
 impl<'a, T> Cache<'a, T> {
     fn new(input: &'a Input) -> Cache<'a, T> {
         Cache {
-            input: input,
+            input,
             init: None,
             union1: None,
             union2: None,
@@ -50,7 +50,7 @@ impl<'a, T> Cache<'a, T> {
         T: UnionFind<V>,
         V: Union + Default,
     {
-        if let None = self.init {
+        if self.init.is_none() {
             self.init = Some(self.input.init());
         }
         self.init.as_ref().unwrap()
@@ -61,7 +61,7 @@ impl<'a, T> Cache<'a, T> {
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
-        if let None = self.union1 {
+        if self.union1.is_none() {
             let mut uf = self.init().clone();
             self.input.union(&mut uf);
             self.union1 = Some(uf);
@@ -74,7 +74,7 @@ impl<'a, T> Cache<'a, T> {
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
-        if let None = self.union2 {
+        if self.union2.is_none() {
             let mut uf = self.union1().clone();
             self.input.union(&mut uf);
             self.union2 = Some(uf);
@@ -87,7 +87,7 @@ impl<'a, T> Cache<'a, T> {
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
-        if let None = self.find1 {
+        if self.find1.is_none() {
             let mut uf = self.union1().clone();
             self.input.find_all(&mut uf);
             self.find1 = Some(uf);
@@ -100,7 +100,7 @@ impl<'a, T> Cache<'a, T> {
         T: UnionFind<V> + Clone,
         V: Union + Default,
     {
-        if let None = self.find2 {
+        if self.find2.is_none() {
             let mut uf = self.union1().clone();
             self.input.find_all(&mut uf);
             self.find2 = Some(uf);
@@ -129,7 +129,7 @@ impl Input {
 
         while reader.read_line(&mut buf).unwrap() > 0 {
             {
-                let mut sp = buf.trim().split_whitespace();
+                let mut sp = buf.split_whitespace();
                 let a = sp.next().unwrap().parse::<usize>().unwrap();
                 let b = sp.next().unwrap().parse::<usize>().unwrap();
                 conn.push((a, b));
@@ -138,11 +138,7 @@ impl Input {
             buf.clear();
         }
 
-        Input {
-            name: name,
-            size: size,
-            conn: conn,
-        }
+        Input { name, size, conn }
     }
 
     fn init<T, V>(&self) -> T
@@ -182,7 +178,7 @@ impl Input {
         let mut uf = base.clone();
         c.bench_function(&id, |b| {
             b.iter(|| {
-                uf.clone_from(&base);
+                uf.clone_from(base);
             })
         });
     }
@@ -197,7 +193,7 @@ impl Input {
         let mut uf = base.clone();
         c.bench_function(&id, |b| {
             b.iter(|| {
-                uf.clone_from(&base);
+                uf.clone_from(base);
                 self.union(&mut uf);
             })
         });
@@ -212,7 +208,7 @@ impl Input {
         let mut uf = base.clone();
         c.bench_function(&id, |b| {
             b.iter(|| {
-                uf.clone_from(&base);
+                uf.clone_from(base);
                 self.union(&mut uf);
             })
         });
@@ -227,7 +223,7 @@ impl Input {
         let mut uf = base.clone();
         c.bench_function(&id, |b| {
             b.iter(|| {
-                uf.clone_from(&base);
+                uf.clone_from(base);
                 self.union(&mut uf);
             })
         });
@@ -243,7 +239,7 @@ impl Input {
         let mut uf = base.clone();
         c.bench_function(&id, |b| {
             b.iter(|| {
-                uf.clone_from(&base);
+                uf.clone_from(base);
                 self.find_all(&mut uf);
             })
         });
@@ -258,7 +254,7 @@ impl Input {
         let mut uf = base.clone();
         c.bench_function(&id, |b| {
             b.iter(|| {
-                uf.clone_from(&base);
+                uf.clone_from(base);
                 self.find_all(&mut uf);
             })
         });
@@ -273,45 +269,54 @@ impl Input {
         let mut uf = base.clone();
         c.bench_function(&id, |b| {
             b.iter(|| {
-                uf.clone_from(&base);
+                uf.clone_from(base);
                 self.find_all(&mut uf);
             })
         });
     }
-}
 
-fn bench_for_type<T, V>(c: &mut Criterion, category: &str, inputs: &[Input])
-where
-    T: UnionFind<V> + Clone,
-    V: Union + Default,
-{
-    for input in inputs {
-        let mut cache = Cache::<T>::new(input);
-        input.bench_clone_from(c, category, &mut cache);
-        input.bench_union1(c, category, &mut cache);
-        input.bench_union2(c, category, &mut cache);
-        input.bench_union3(c, category, &mut cache);
-        input.bench_find1(c, category, &mut cache);
-        input.bench_find2(c, category, &mut cache);
-        input.bench_find3(c, category, &mut cache);
+    fn bench_union<T, V>(&self, c: &mut Criterion, category: &str)
+    where
+        T: UnionFind<V> + Clone,
+        V: Union + Default,
+    {
+        let mut cache = Cache::<T>::new(self);
+        self.bench_union1(c, category, &mut cache);
+    }
+
+    fn bench_full<T, V>(&self, c: &mut Criterion, category: &str)
+    where
+        T: UnionFind<V> + Clone,
+        V: Union + Default,
+    {
+        let mut cache = Cache::<T>::new(self);
+        self.bench_clone_from(c, category, &mut cache);
+        self.bench_union1(c, category, &mut cache);
+        self.bench_union2(c, category, &mut cache);
+        self.bench_union3(c, category, &mut cache);
+        self.bench_find1(c, category, &mut cache);
+        self.bench_find2(c, category, &mut cache);
+        self.bench_find3(c, category, &mut cache);
     }
 }
 
 fn bench(c: &mut Criterion) {
-    let inputs = &[
-        Input::from_file("tiny", "etc/tinyUF.txt"),
-        Input::from_file("medium", "etc/mediumUF.txt"),
-        Input::from_file("large", "etc/largeUF.txt"),
-    ];
+    let tiny = Input::from_file("tiny", "etc/tinyUF.txt");
+    let medium = Input::from_file("medium", "etc/mediumUF.txt");
+    let large = Input::from_file("large", "etc/largeUF.txt");
 
-    bench_for_type::<QuickUnionUf<UnionBySize>, _>(c, "quick_union::by_size", inputs);
-    bench_for_type::<QuickUnionUf<UnionByRank>, _>(c, "quick_union::by_rank", inputs);
-    bench_for_type::<QuickUnionUf<UnionBySizeRank>, _>(c, "quick_union::by_size_rank", inputs);
-    bench_for_type::<QuickUnionUf<UnionByRankSize>, _>(c, "quick_union::by_rank_size", inputs);
-    bench_for_type::<QuickFindUf<UnionBySize>, _>(c, "quick_find::by_size", inputs);
-    bench_for_type::<QuickFindUf<UnionByRank>, _>(c, "quick_find::by_rank", inputs);
-    bench_for_type::<QuickFindUf<UnionBySizeRank>, _>(c, "quick_find::by_size_rank", inputs);
-    bench_for_type::<QuickFindUf<UnionByRankSize>, _>(c, "quick_find::by_rank_size", inputs);
+    for input in &[&tiny, &medium, &large] {
+        input.bench_full::<QuickUnionUf<UnionBySize>, _>(c, "quick_union");
+        input.bench_full::<QuickFindUf<UnionBySize>, _>(c, "quick_find");
+    }
+
+    {
+        let input = &tiny;
+        input.bench_union::<QuickUnionUf<UnionBySize>, _>(c, "by_size");
+        input.bench_union::<QuickUnionUf<UnionByRank>, _>(c, "by_rank");
+        input.bench_union::<QuickUnionUf<UnionBySizeRank>, _>(c, "by_size_rank");
+        input.bench_union::<QuickUnionUf<UnionByRankSize>, _>(c, "by_rank_size");
+    }
 }
 
 criterion_group!(benches, bench);

@@ -44,12 +44,11 @@ impl UnionBySize {
     }
 }
 
-
 /// Operates the `union` with using the rank of the sets as weight.
 ///
 /// A smaller ranked set will be the children of a larger ranked set.
 /// If both sets have the same rank, the size of the set is used.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct UnionByRank(u8);
 
 impl Union for UnionByRank {
@@ -62,13 +61,6 @@ impl Union for UnionByRank {
             Ordering::Greater => UnionResult::Left(left),
             Ordering::Equal => UnionResult::Left(UnionByRank(lrank + 1)),
         }
-    }
-}
-
-impl Default for UnionByRank {
-    #[inline]
-    fn default() -> UnionByRank {
-        UnionByRank(0)
     }
 }
 
