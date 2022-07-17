@@ -16,7 +16,6 @@
 #![warn(unused_import_braces)]
 #![warn(unused_qualifications)]
 #![warn(unused_results)]
-#![cfg_attr(all(test, feature = "nightly"), feature(test))]
 
 #[cfg(all(test, feature = "nightly"))]
 #[macro_use]
@@ -35,5 +34,3 @@ pub use quick_find::QuickFindUf;
 
 #[cfg(test)]
 mod tests;
-#[cfg(all(test, feature = "nightly"))]
-mod bench;
