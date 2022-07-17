@@ -6,19 +6,12 @@
 // copied, modified, or distributed except according to those terms.
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use lazy_static::lazy_static;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use union_find::{
     QuickFindUf, QuickUnionUf, Union, UnionByRank, UnionByRankSize, UnionBySize, UnionBySizeRank,
     UnionFind,
 };
-
-lazy_static! {
-    static ref TINY: Input = Input::from_file("tiny", "etc/tinyUF.txt");
-    static ref MEDIUM: Input = Input::from_file("medium", "etc/mediumUF.txt");
-    static ref LARGE: Input = Input::from_file("large", "etc/largeUF.txt");
-}
 
 struct Cache<'a, T> {
     input: &'a Input,

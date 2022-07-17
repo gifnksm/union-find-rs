@@ -18,4 +18,3 @@ harness = false
 
 [dev-dependencies]
 criterion = "0.3.6"
-lazy_static = "1.0"
