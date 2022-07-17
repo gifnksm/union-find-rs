@@ -145,11 +145,9 @@ impl<A> Extend<A> for QuickFindUf<A> {
         let payload = iterable
             .into_iter()
             .zip(len..)
-            .map(|(data, link)| {
-                Payload {
-                    data: data,
-                    link_last_child: link,
-                }
+            .map(|(data, link)| Payload {
+                data: data,
+                link_last_child: link,
             })
             .map(Some);
         self.payload.extend(payload);

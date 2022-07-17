@@ -44,7 +44,6 @@ impl UnionBySize {
     }
 }
 
-
 /// Operates the `union` with using the rank of the sets as weight.
 ///
 /// A smaller ranked set will be the children of a larger ranked set.
