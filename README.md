@@ -1,5 +1,6 @@
 # union-find-rs
 
+[![maintenance status: passively-maintained](https://img.shields.io/badge/maintenance-passively--maintained-yellowgreen.svg)](https://doc.rust-lang.org/cargo/reference/manifest.html#the-badges-section)
 [![license](https://img.shields.io/crates/l/union-find.svg)](#license)
 [![crates.io](https://img.shields.io/crates/v/union-find.svg)](https://crates.io/crates/union-find)
 [![docs.rs](https://img.shields.io/docsrs/union-find/latest)](https://docs.rs/union-find/latest/)

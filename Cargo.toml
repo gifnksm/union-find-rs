@@ -12,6 +12,9 @@ description = "Struct and methods for union-find operation."
 documentation = "https://gifnksm.github.io/union-find-rs"
 exclude = ["etc/*"]
 
+[badges]
+maintenance = { status = "passively-maintained" }
+
 [[bench]]
 name = "bench"
 harness = false
