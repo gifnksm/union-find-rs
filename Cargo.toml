@@ -18,3 +18,8 @@ harness = false
 
 [dev-dependencies]
 criterion = "0.3.6"
+
+[package.metadata.release]
+pre-release-replacements = [
+    { file = "README.md", search = "union-find = \"[0-9\\.]+\"", replace = "{{crate_name}} = \"{{version}}\"" }
+]
