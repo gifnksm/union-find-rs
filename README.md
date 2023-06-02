@@ -4,7 +4,7 @@
 [![license](https://img.shields.io/crates/l/union-find.svg)](#license)
 [![crates.io](https://img.shields.io/crates/v/union-find.svg)](https://crates.io/crates/union-find)
 [![docs.rs](https://img.shields.io/docsrs/union-find/latest)](https://docs.rs/union-find/latest/)
-[![rust 1.57.0+ badge](https://img.shields.io/badge/rust-1.57.0+-93450a.svg)](https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field)
+[![rust 1.64.0+ badge](https://img.shields.io/badge/rust-1.64.0+-93450a.svg)](https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field)
 [![Rust CI](https://github.com/gifnksm/union-find-rs/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/gifnksm/union-find-rs/actions/workflows/rust-ci.yml)
 [![codecov](https://codecov.io/gh/gifnksm/union-find-rs/branch/master/graph/badge.svg?token=fKfEmEaMjc)](https://codecov.io/gh/gifnksm/union-find-rs)
 
@@ -23,7 +23,7 @@ union-find = "0.4.1"
 
 ## Minimum supported Rust version (MSRV)
 
-The minimum supported Rust version is **Rust 1.57.0**.
+The minimum supported Rust version is **Rust 1.64.0**.
 At least the last 3 versions of stable Rust are supported at any given time.
 
 While a crate is pre-release status (0.x.x) it may have its MSRV bumped in a patch release.
