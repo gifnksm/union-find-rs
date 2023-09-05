@@ -7,7 +7,6 @@
 
 use crate::{Union, UnionFind, UnionResult};
 use std::iter::FromIterator;
-use std::mem;
 
 /// Union-Find implementation with quick union operation.
 #[derive(Debug)]
@@ -55,8 +54,8 @@ impl<V: Union> UnionFind<V> for QuickUnionUf<V> {
         }
 
         // Temporary replace with dummy to move out the elements of the vector.
-        let v0 = mem::replace(&mut self.payload[k0], None).unwrap();
-        let v1 = mem::replace(&mut self.payload[k1], None).unwrap();
+        let v0 = self.payload[k0].take().unwrap();
+        let v1 = self.payload[k1].take().unwrap();
 
         let (parent, child, val) = match Union::union(v0, v1) {
             UnionResult::Left(val) => (k0, k1, val),

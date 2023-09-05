@@ -7,7 +7,6 @@
 
 use crate::{Union, UnionFind, UnionResult};
 use std::iter::FromIterator;
-use std::mem;
 
 #[derive(Copy, Clone, Debug)]
 struct Payload<V> {
@@ -74,11 +73,11 @@ impl<V: Union> UnionFind<V> for QuickFindUf<V> {
         let Payload {
             data: d0,
             link_last_child: c0,
-        } = mem::replace(&mut self.payload[k0], None).unwrap();
+        } = self.payload[k0].take().unwrap();
         let Payload {
             data: d1,
             link_last_child: c1,
-        } = mem::replace(&mut self.payload[k1], None).unwrap();
+        } = self.payload[k1].take().unwrap();
 
         let (root, child_root, val, last) = match Union::union(d0, d1) {
             UnionResult::Left(val) => (k0, k1, val, c0),
