@@ -15,7 +15,7 @@ pub trait Union: Sized {
     fn union(lval: Self, rval: Self) -> UnionResult<Self>;
 }
 
-/// Return value of the `Union::merge`.
+/// Return value of the [`Union::union`].
 #[allow(missing_docs)]
 #[derive(Copy, Clone, Debug)]
 pub enum UnionResult<T> {
