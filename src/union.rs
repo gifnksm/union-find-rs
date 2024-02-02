@@ -131,7 +131,7 @@ impl UnionBySizeRank {
     }
 }
 
-/// Operates the `union` with using the ramk and the size of the sets as weight.
+/// Operates the `union` with using the rank and the size of the sets as weight.
 ///
 /// A smaller ranked set will be the children of a larger ranked set.
 /// If both sets have the same rank, compared by the size.
