@@ -48,10 +48,6 @@
 #![warn(unused_qualifications)]
 #![warn(unused_results)]
 
-#[cfg(all(test, feature = "nightly"))]
-#[macro_use]
-extern crate lazy_static;
-
 mod traits;
 pub use crate::traits::{Union, UnionFind, UnionResult};
 
