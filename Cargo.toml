@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/gifnksm/union-find-rs"
 description = "Struct and methods for union-find operation."
-documentation = "https://gifnksm.github.io/union-find-rs"
+documentation = "https://docs.rs/union-find-rs"
 exclude = ["etc/*"]
 
 [badges]
