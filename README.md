@@ -18,7 +18,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-union-find = "0.4.2"
+union-find = "0.4.3"
 ```
 
 ## Minimum supported Rust version (MSRV)
