@@ -8,18 +8,25 @@
 use crate::{Union, UnionResult};
 use std::cmp::Ordering;
 
+const DEFAULT_RANK: u8 = 0;
+const DEFAULT_SIZE: usize = 1;
+
 /// Operates the `union` with using the size of the sets as weight.
 ///
 /// A smaller sized set will be the children of a larger sized set.
 #[derive(Copy, Clone, Debug)]
-pub struct UnionBySize(usize);
+pub struct UnionBySize {
+    size: usize,
+}
 
 impl Union for UnionBySize {
     #[inline]
     fn union(left: UnionBySize, right: UnionBySize) -> UnionResult<UnionBySize> {
         let lsize = left.size();
         let rsize = right.size();
-        let result = UnionBySize(lsize + rsize);
+        let result = UnionBySize {
+            size: lsize + rsize,
+        };
         if lsize >= rsize {
             UnionResult::Left(result)
         } else {
@@ -31,7 +38,7 @@ impl Union for UnionBySize {
 impl Default for UnionBySize {
     #[inline]
     fn default() -> UnionBySize {
-        UnionBySize(1)
+        UnionBySize { size: DEFAULT_SIZE }
     }
 }
 
@@ -39,17 +46,18 @@ impl UnionBySize {
     /// Returns the size of the set.
     #[inline]
     pub fn size(&self) -> usize {
-        let UnionBySize(size) = *self;
-        size
+        self.size
     }
 }
 
 /// Operates the `union` with using the rank of the sets as weight.
 ///
 /// A smaller ranked set will be the children of a larger ranked set.
-/// If both sets have the same rank, the size of the set is used.
-#[derive(Copy, Clone, Debug, Default)]
-pub struct UnionByRank(u8);
+/// If both sets have the same rank, the rank of the resulting set is incremented.
+#[derive(Copy, Clone, Debug)]
+pub struct UnionByRank {
+    rank: u8,
+}
 
 impl Union for UnionByRank {
     #[inline]
@@ -59,17 +67,22 @@ impl Union for UnionByRank {
         match lrank.cmp(&rrank) {
             Ordering::Less => UnionResult::Right(right),
             Ordering::Greater => UnionResult::Left(left),
-            Ordering::Equal => UnionResult::Left(UnionByRank(lrank + 1)),
+            Ordering::Equal => UnionResult::Left(UnionByRank { rank: lrank + 1 }),
         }
     }
 }
 
+impl Default for UnionByRank {
+    fn default() -> Self {
+        Self { rank: DEFAULT_RANK }
+    }
+}
+
 impl UnionByRank {
-    /// Returns the rankq of the set.
+    /// Returns the rank of the set.
     #[inline]
     pub fn rank(&self) -> u8 {
-        let UnionByRank(rank) = *self;
-        rank
+        self.rank
     }
 }
 
@@ -78,7 +91,10 @@ impl UnionByRank {
 /// A smaller sized set will be the children of a larger sized set.
 /// If both sets have the same size, compared by the rank.
 #[derive(Copy, Clone, Debug)]
-pub struct UnionBySizeRank(usize, u8);
+pub struct UnionBySizeRank {
+    size: usize,
+    rank: u8,
+}
 
 impl Union for UnionBySizeRank {
     #[inline]
@@ -96,7 +112,10 @@ impl Union for UnionBySizeRank {
             Ordering::Equal => lrank + 1,
         };
 
-        let result = UnionBySizeRank(new_size, new_rank);
+        let result = UnionBySizeRank {
+            size: new_size,
+            rank: new_rank,
+        };
         match lsize.cmp(&rsize) {
             Ordering::Less => UnionResult::Right(result),
             Ordering::Greater => UnionResult::Left(result),
@@ -111,7 +130,10 @@ impl Union for UnionBySizeRank {
 impl Default for UnionBySizeRank {
     #[inline]
     fn default() -> UnionBySizeRank {
-        UnionBySizeRank(1, 0)
+        UnionBySizeRank {
+            size: DEFAULT_SIZE,
+            rank: DEFAULT_RANK,
+        }
     }
 }
 
@@ -119,15 +141,13 @@ impl UnionBySizeRank {
     /// Returns the size of the set.
     #[inline]
     pub fn size(&self) -> usize {
-        let UnionBySizeRank(size, _) = *self;
-        size
+        self.size
     }
 
     /// Returns the rank of the set.
     #[inline]
     pub fn rank(&self) -> u8 {
-        let UnionBySizeRank(_, rank) = *self;
-        rank
+        self.rank
     }
 }
 
@@ -136,7 +156,10 @@ impl UnionBySizeRank {
 /// A smaller ranked set will be the children of a larger ranked set.
 /// If both sets have the same rank, compared by the size.
 #[derive(Copy, Clone, Debug)]
-pub struct UnionByRankSize(u8, usize);
+pub struct UnionByRankSize {
+    rank: u8,
+    size: usize,
+}
 
 impl Union for UnionByRankSize {
     #[inline]
@@ -154,7 +177,10 @@ impl Union for UnionByRankSize {
             Ordering::Equal => lrank + 1,
         };
 
-        let result = UnionByRankSize(new_rank, new_size);
+        let result = UnionByRankSize {
+            rank: new_rank,
+            size: new_size,
+        };
         match rank_cmp {
             Ordering::Less => UnionResult::Right(result),
             Ordering::Greater => UnionResult::Left(result),
@@ -169,7 +195,10 @@ impl Union for UnionByRankSize {
 impl Default for UnionByRankSize {
     #[inline]
     fn default() -> UnionByRankSize {
-        UnionByRankSize(0, 1)
+        UnionByRankSize {
+            rank: DEFAULT_RANK,
+            size: DEFAULT_SIZE,
+        }
     }
 }
 
@@ -177,14 +206,12 @@ impl UnionByRankSize {
     /// Returns the rank of the set.
     #[inline]
     pub fn rank(&self) -> u8 {
-        let UnionByRankSize(rank, _) = *self;
-        rank
+        self.rank
     }
 
     /// Returns the size of the set.
     #[inline]
     pub fn size(&self) -> usize {
-        let UnionByRankSize(_, size) = *self;
-        size
+        self.size
     }
 }
