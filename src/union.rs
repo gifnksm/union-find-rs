@@ -169,7 +169,7 @@ impl Union for UnionByRankSize {
 impl Default for UnionByRankSize {
     #[inline]
     fn default() -> UnionByRankSize {
-        UnionByRankSize(1, 0)
+        UnionByRankSize(0, 1)
     }
 }
 
